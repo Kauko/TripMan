@@ -49,13 +49,14 @@ class Server:
 
                     try:
                         data = descriptor.recv(32)
-                    except socket.error:
+                    except socket.error, err:
                         data = None
 
                     if not data:
                         print "%s: disconnected" % cid
                         del self.sockets[descriptor]
                     else:
+                        print data
                         for descriptor in self.sockets:
                             descriptor.send(data)
             time.sleep(1/20.0)

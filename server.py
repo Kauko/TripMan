@@ -47,7 +47,11 @@ class Server:
                 elif descriptor in self.sockets:
                     cid = self.sockets[descriptor]
 
-                    data = descriptor.recv(32)
+                    try:
+                        data = descriptor.recv(32)
+                    except socket.error:
+                        data = None
+
                     if not data:
                         print "%s: disconnected" % cid
                         del self.sockets[descriptor]

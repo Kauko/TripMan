@@ -39,10 +39,14 @@ class BackgroundLayer (ColorLayer):
       self.sprite.position = (x, y)
 
 
-def connectToServer(address):
-    print "connecting to", address
+def connectToServer(host, port):
+    print "connecting to", host, port
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    server.connect((host, port))
+    server.send("MOOOO")
+    return server
 
 if __name__ == '__main__':
-    connectToServer("127.0.0.1")
+    server = connectToServer('localhost', 8999)
     director.init()
     director.run(Scene(BackgroundLayer()))

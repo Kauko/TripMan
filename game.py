@@ -11,6 +11,23 @@ UP = 65362
 RIGHT = 65363
 DOWN = 65364
 
+class ServerConnection(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        self.socket.connect((host, port))
+        self.socket.setblocking(0)
+
+    def read(self):
+        r, _, _ = select.select([self.socket], [], [], 0)
+        if r:
+            return self.socket.recv(1024)
+
+    def write(self, data):
+        
+        self.socket.send(data)
+
 class BackgroundLayer (ColorLayer):
     is_event_handler = True
     def __init__(self):
@@ -36,17 +53,19 @@ class BackgroundLayer (ColorLayer):
           x += 2
       if DOWN in self.chars_pressed:
           y -= 2
+      if x != self.sprite.position[0] or y != self.sprite.position[1]:
+          serverConnection.write(str((y, y)))
       self.sprite.position = (x, y)
 
+      #read networkstuff
+      data = serverConnection.read()
+      if data:
+          print data
 
-def connectToServer(host, port):
-    print "connecting to", host, port
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-    server.connect((host, port))
-    server.send("MOOOO")
-    return server
+
+
 
 if __name__ == '__main__':
-    server = connectToServer('localhost', 8999)
+    serverConnection = ServerConnection('localhost', 6660)
     director.init()
     director.run(Scene(BackgroundLayer()))

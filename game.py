@@ -1,6 +1,8 @@
 import select
 import socket
 
+import pyglet
+
 from cocos.director import *
 from cocos.scene import *
 from cocos.layer import *
@@ -28,10 +30,14 @@ class ServerConnection(object):
         
         self.socket.send(data)
 
-class BackgroundLayer (ColorLayer):
+class PlayerLayer(ScrollableLayer):
     is_event_handler = True
-    def __init__(self):
-        super(BackgroundLayer, self).__init__(0, 0, 100, 255)
+
+    def __init__(self, width, height):
+        super(PlayerLayer, self).__init__()
+        self.px_width = width
+        self.px_height = height
+        
         self.sprite = Sprite('test.png', position=(320,240))  
         self.add(self.sprite)  
         self.chars_pressed = set()
@@ -54,18 +60,26 @@ class BackgroundLayer (ColorLayer):
       if DOWN in self.chars_pressed:
           y -= 2
       if x != self.sprite.position[0] or y != self.sprite.position[1]:
-          serverConnection.write(str((y, y)))
-      self.sprite.position = (x, y)
+          serverConnection.write(str((x, y)))
+          self.sprite.position = (x, y)
+          self.get_ancestor(ScrollingManager).set_focus(x, y)
 
       #read networkstuff
       data = serverConnection.read()
       if data:
           print data
 
-
-
+class GameLevelScene(Scene):
+    def __init__(self):
+        super(GameLevelScene, self).__init__()
+        self.scroller = ScrollingManager()
+        bglayer = ScrollableLayer()
+        bglayer.add(Sprite('background.png', position=(1300, 360)))
+        self.scroller.add(bglayer)
+        self.scroller.add(PlayerLayer(2600, 720), z=1)
+        self.add(self.scroller)
 
 if __name__ == '__main__':
     serverConnection = ServerConnection('localhost', 6660)
-    director.init()
-    director.run(Scene(BackgroundLayer()))
+    director.init(width=1240, height=720)
+    director.run(GameLevelScene())

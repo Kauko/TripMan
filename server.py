@@ -52,6 +52,7 @@ class Server:
                         print "%s: disconnected" % cid
                         del self.sockets[descriptor]
                     else:
+                        print data
                         for descriptor in self.sockets:
                             descriptor.send(data)
             time.sleep(1/20.0)

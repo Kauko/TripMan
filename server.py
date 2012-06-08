@@ -34,10 +34,10 @@ class Server:
 
         self.worldGrid = []
         for index in range(len(lines)):
-            self.worldGrid.insert(0, list(lines[index].strip("\n").strip("\r")))
+            self.worldGrid.insert(0, list(lines[index].strip()))
 
         self.start_points = dict()
-        for cid in ["A"]: #,"B","C","D"]:
+        for cid in ["A", "B","C","D"]:
             self.start_points[cid] = self.getPlayerStartPosition(cid)
             print "START", self.start_points[cid]
 

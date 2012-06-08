@@ -15,10 +15,12 @@ LEFT = 65361
 UP = 65362
 RIGHT = 65363
 DOWN = 65364
+
 MOVELEFT = 1
 MOVERIGHT = 3
 MOVEUP = 2
 MOVEDOWN = 4
+
 TILEWIDTH = 16
 TILEHEIGHT = 16
 
@@ -77,7 +79,7 @@ class PlayerLayer(ScrollableLayer):
         self.chars_pressed.remove(key)
 
     def update(self, dt):
-        x, y = 0, 0
+        self.movedir = 0
         if LEFT in self.chars_pressed:
                 self.movedir = MOVELEFT
         if UP in self.chars_pressed:
@@ -86,16 +88,17 @@ class PlayerLayer(ScrollableLayer):
                 self.movedir = MOVERIGHT
         if DOWN in self.chars_pressed:
                 self.movedir = MOVEDOWN
-            if self.get_ancestor(GameLevelScene).movePlayer(self.movedir) is not None:
-                    print("")
-                    #position = pack_position(self.cid, 1, x, y)
-                    #serverConnection.write(position)
+        if self.get_ancestor(GameLevelScene).movePlayer(self.movedir)  is not None:
+                print("")
+                #position = pack_position(self.cid, 1, x, y)
+                #serverConnection.write(position)
+        print(self.get_ancestor(GameLevelScene).getPlayerPosition())
 
     def update_network(self, dt):
         #read networkstuff
-         mid, data = serverConnection.read()
+        mid, data = serverConnection.read()
         #if mid:
-            #print repr(mid), repr(data)
+        #print repr(mid), repr(data)
         if mid == 1:
             self.cid = data
             sprite = Sprite('test.png', position=(320,240))
@@ -145,35 +148,48 @@ class GameLevelScene(Scene):
         
     def isMoveLegal(self, movedir):
         position = self.getPlayerPosition()
-        print(position)
+        #print(position)
         try:
             if movedir == MOVELEFT:
-                if self.worldGrid[position[1]][position[0]-1] == 1 or position[0] == 0:
+                if self.worldGrid[position[1]][position[0]-1] == '1' or position[0] == 0:
                     return False
                 else:
                     return True
             elif movedir == MOVEUP:
-                if self.worldGrid[position[1]-1][position[0]] == 1 or position[1] == 0:
+                if self.worldGrid[position[1]-1][position[0]] == '1' or position[1] == 0:
                     return False
                 else:
                     return True
             elif movedir == MOVERIGHT:
-                if self.worldGrid[position[1]][position[0]+1] == 1: #or position[0] == len(self.worldGrid[position[1]])-1:
+                if self.worldGrid[position[1]][position[0]+1] == '1': #or position[0] == len(self.worldGrid[position[1]])-1:
                     return False
                 else:
                     return True
             elif movedir == MOVEDOWN:
-                if self.worldGrid[position[1]+1][position[0]] == 1:# or position[1] == len(self.worldGrid)-1:
+                if self.worldGrid[position[1]+1][position[0]] == '1':# or position[1] == len(self.worldGrid)-1:
                     return False
                 else:
                     return True
+            else:
+                return False
         except IndexError:
             return False
         
     def movePlayer(self, movedir):
         position = self.getPlayerPosition()
         if self.isMoveLegal(movedir):
-            print(movedir," MOVE IS LEGAL")
+            if movedir == MOVELEFT:
+                self.worldGrid[position[1]][position[0]] = '0'
+                self.worldGrid[position[1]][position[0]-1] = 'A'
+            if movedir == MOVEUP:
+                self.worldGrid[position[1]][position[0]] = '0'
+                self.worldGrid[position[1]-1][position[0]] = 'A'
+            if movedir == MOVERIGHT:
+                self.worldGrid[position[1]][position[0]] = '0'
+                self.worldGrid[position[1]][position[0]+1] = 'A'
+            if movedir == MOVEDOWN:
+                self.worldGrid[position[1]][position[0]] = '0'
+                self.worldGrid[position[1]+1][position[0]] = 'A'
         else:
             return
         
@@ -186,6 +202,6 @@ class GameLevelScene(Scene):
         
 
 if __name__ == '__main__':
-    serverConnection = ServerConnection('shell.jkry.org', 10066)
+    serverConnection = ServerConnection('localhost', 6660)
     director.init(width=1240, height=720)
     director.run(GameLevelScene())

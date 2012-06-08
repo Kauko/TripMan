@@ -8,6 +8,7 @@ from cocos.director import *
 from cocos.scene import *
 from cocos.layer import *
 from cocos.sprite import *
+from cocos.actions.interval_actions import MoveTo
 
 from messages import get_unpacker, pack_position, pack_eat, pack_dead
 
@@ -47,12 +48,18 @@ class ServerConnection(object):
             self.last = data
             self.socket.send(data)
 
+class Player(Sprite):
+    def __init__(self, cid, image, position):
+        Sprite.__init__(self, image, position=position)
+        self.cid = cid
+        self.target = self.position
+        self.moveto = None
+
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
 
     def __init__(self, width, height, start_position):
         super(PlayerLayer, self).__init__()
-        print(start_position)
         self.px_width = width
         self.px_height = height
         
@@ -60,9 +67,8 @@ class PlayerLayer(ScrollableLayer):
         self.schedule(self.update)
         self.schedule_interval(self.update_network, 1/20.0)
         
-        self.movement = [0, 0]
-        self.sprites = dict()
         self.cid = None
+        self.players = dict()
 
     def on_key_press(self, key, modifiers):
         self.chars_pressed.add(key)
@@ -71,61 +77,53 @@ class PlayerLayer(ScrollableLayer):
         self.chars_pressed.remove(key)
 
     def update(self, dt):
-        pass
+        player = self.players.get(self.cid, None)
+        if player:
+            (x, y) = player.position 
+            self.get_ancestor(ScrollingManager).set_focus(int(x), int(y))
 
     def update_network(self, dt):
+        #read input
+        player = self.players.get(self.cid, None)
+        if player:
+            x, y = player.target
+            if LEFT in self.chars_pressed:
+                x -= 200 * dt
+            if UP in self.chars_pressed:
+                y += 200 * dt
+            if RIGHT in self.chars_pressed:
+                x += 200 * dt
+            if DOWN in self.chars_pressed:
+                y -= 200 * dt
+            player.target = (x, y) 
 
         #read networkstuff
         mid, data = serverConnection.read()
-        if mid:
-            print repr(mid), repr(data)
+        #if mid:
+        #    print repr(mid), repr(data)
         if mid == 1:
             self.cid = data
-            sprite = Sprite('test.png', position=(320,240))
-            self.add(sprite)
-            #self.movement = [320, 240]
-            self.sprites[self.cid] = sprite
+            player = Player(self.cid, "test.png", (320,240))
+            self.add(player)
+            self.players[self.cid] = player
         elif mid == 3:
             cid, direction, x, y = data
-            sprite = self.sprites.get(cid, None)
-            if not sprite:
-                sprite = Sprite('test.png', position=(320,240))
-                self.add(sprite)
-                self.sprites[cid] = sprite
-            sprite.position = (x, y)
-            self.get_ancestor(ScrollingManager).set_focus(x, y)
-            #print time.time(), "POSITION", data
+            player = self.players.get(cid, None)
+            if not player:
+                player = Player(self.cid, "test.png", (320,240))
+                self.add(player)
+                self.players[cid] = player
+
+            if player.moveto:
+                player.moveto.stop()
+            player.moveto = MoveTo((x,y), 1/20.0)
+            player.do(player.moveto)
 
         #write position
-        if self.cid is not None:
-            player = self.sprites.get(self.cid, None)
-            x, y = player.position
-            nx, ny = self.movement
-            
-            if x != nx or y != ny:
-                if self.cid:
-                    position = pack_position(self.cid, 1, nx, ny)
-                    serverConnection.write(position)
+        x, y = player.target 
+        position = pack_position(self.cid, 1, x, y)
+        serverConnection.write(position)
 
-        player = self.sprites.get(self.cid, None)
-        if not player:
-            return
-
-        x, y = player.position
-            
-        if LEFT in self.chars_pressed:
-            x -= 200 * dt
-        if UP in self.chars_pressed:
-            y += 200 * dt
-        if RIGHT in self.chars_pressed:
-            x += 200 * dt
-        if DOWN in self.chars_pressed:
-            y -= 200 * dt
-
-        print x, y
-        self.movement = [x, y]
-
-        
 
 class GameLevelScene(Scene):
     def __init__(self):
@@ -137,13 +135,11 @@ class GameLevelScene(Scene):
         for line in f:
             line = line.replace('\n','')
             worldGrid.append(list(line))
-        print(worldGrid)
         bglayer.add(Sprite('background.png', position=(1300, 360)))
         self.scroller.add(bglayer)
         for sublist in worldGrid:
             for char in sublist:
                 if char == 'A':
-                    print("derp")
                     self.scroller.add(PlayerLayer(2600, 720, (worldGrid.index(sublist),sublist.index(char))), z=1)
                          
         

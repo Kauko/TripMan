@@ -56,10 +56,10 @@ class PlayerLayer(ScrollableLayer):
         self.px_width = width
         self.px_height = height
         
-        self.sprite = Sprite('test.png', position=(320,240))  
-        self.add(self.sprite)  
         self.chars_pressed = set()
         self.schedule(self.update)
+        self.sprites = dict()
+        self.cid = None
 
     def on_key_press(self, key, modifiers):
         self.chars_pressed.add(key)
@@ -68,26 +68,39 @@ class PlayerLayer(ScrollableLayer):
         self.chars_pressed.remove(key)
 
     def update(self, dt):
-        x, y = self.sprite.position
-        if LEFT in self.chars_pressed:
-            x -= 2
-        if UP in self.chars_pressed:
-            y += 2
-        if RIGHT in self.chars_pressed:
-            x += 2
-        if DOWN in self.chars_pressed:
-            y -= 2
-        if x != self.sprite.position[0] or y != self.sprite.position[1]:
-            position = pack_position("Q", 1, x, y)
-            serverConnection.write(position)
-            self.sprite.position = (x, y)
-            self.get_ancestor(ScrollingManager).set_focus(x, y)
+        player = self.sprites.get(self.cid, None)
+        if player:
+            x, y = player.position
+            if LEFT in self.chars_pressed:
+                x -= 2
+            if UP in self.chars_pressed:
+                y += 2
+            if RIGHT in self.chars_pressed:
+                x += 2
+            if DOWN in self.chars_pressed:
+                y -= 2
+            if x != player.position[0] or y != player.position[1]:
+                if self.cid:
+                    position = pack_position(self.cid, 1, x, y)
+                    serverConnection.write(position)
 
         #read networkstuff
         mid, data = serverConnection.read()
-        if mid == 3:
+        if mid:
+            print repr(mid), repr(data)
+        if mid == 1:
+            self.cid = data
+            sprite = Sprite('test.png', position=(320,240))
+            self.add(sprite)
+            self.sprites[self.cid] = sprite
+        elif mid == 3:
             cid, direction, x, y = data
-            self.sprite.position = (x, y)
+            sprite = self.sprites.get(cid, None)
+            if not sprite:
+                sprite = Sprite('test.png', position=(320,240))
+                self.add(sprite)
+                self.sprites[cid] = sprite
+            sprite.position = (x, y)
             self.get_ancestor(ScrollingManager).set_focus(x, y)
             #print time.time(), "POSITION", data
 

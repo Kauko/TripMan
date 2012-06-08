@@ -2,7 +2,7 @@ import time
 import random
 import socket
 from select import select
-from messages import get_unpacker
+from messages import get_unpacker, pack_cid, pack_server_full
 
 class Server:
     def __init__(self, address):
@@ -39,13 +39,14 @@ class Server:
                 if descriptor == self.socket:
                     descriptor, address = self.socket.accept()
                     if len(self.sockets) > 3:
-                        descriptor.send("server full\n")
+                        descriptor.send(pack_server_full())
                         descriptor.close()
                         continue
 
                     cid = self.generate_id()
                     print "%s: connected" % cid
                     self.sockets[descriptor] = cid
+                    descriptor.send(pack_cid(cid))
                 elif descriptor in self.sockets:
                     cid = self.sockets[descriptor]
 

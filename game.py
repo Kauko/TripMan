@@ -73,18 +73,18 @@ class PlayerLayer(ScrollableLayer):
     def update(self, dt):
         x, y = 0, 0
         if LEFT in self.chars_pressed:
-            x -= 2
+            x -= 200 * dt
         if UP in self.chars_pressed:
-            y += 2
+            y += 200 * dt
         if RIGHT in self.chars_pressed:
-            x += 2
+            x += 200 * dt
         if DOWN in self.chars_pressed:
-            y -= 2
+            y -= 200 * dt
         self.movement = [x, y]
 
     def update_network(self, dt):
         #read networkstuff
-        mid, data = serverConnection.read()
+         mid, data = serverConnection.read()
         if mid:
             print repr(mid), repr(data)
         if mid == 1:

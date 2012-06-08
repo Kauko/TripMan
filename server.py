@@ -53,7 +53,6 @@ class Server:
                     data = None
                     try:
                         mid = descriptor.recv(1)
-                        print repr(mid)
                         if mid:
                             length, unpacker = get_unpacker(mid)
                             if length:
@@ -69,7 +68,6 @@ class Server:
                             try:
                                 start = time.time()
                                 descriptor.send(data)
-                                print cid, time.time()-start
                             except socket.error, err:
                                 print "socket.error", repr(err)
                                 del self.sockets[descriptor]

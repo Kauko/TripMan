@@ -15,6 +15,8 @@ LEFT = 65361
 UP = 65362
 RIGHT = 65363
 DOWN = 65364
+TILEWIDTH = 16
+TILEHEIGHT = 16
 
 class ServerConnection(object):
     def __init__(self, host, port):
@@ -48,8 +50,9 @@ class ServerConnection(object):
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, start_position):
         super(PlayerLayer, self).__init__()
+        print(start_position)
         self.px_width = width
         self.px_height = height
         
@@ -77,6 +80,8 @@ class PlayerLayer(ScrollableLayer):
         if x != self.sprite.position[0] or y != self.sprite.position[1]:
             position = pack_position("Q", 1, x, y)
             serverConnection.write(position)
+            self.sprite.position = (x, y)
+            self.get_ancestor(ScrollingManager).set_focus(x, y)
 
         #read networkstuff
         mid, data = serverConnection.read()
@@ -91,9 +96,19 @@ class GameLevelScene(Scene):
         super(GameLevelScene, self).__init__()
         self.scroller = ScrollingManager()
         bglayer = ScrollableLayer()
-#        bglayer.add(Sprite('background.png', position=(1300, 360)))
-#        self.scroller.add(bglayer)
-        self.scroller.add(PlayerLayer(2600, 720), z=1)
+        f = open('level1.txt', "r")
+        worldGrid = []
+        for line in f:
+            line = line.replace('\n','')
+            worldGrid.append(list(line))
+        print(worldGrid)
+        #bglayer.add(Sprite('background.png', position=(1300, 360)))
+        #self.scroller.add(bglayer)
+        for sublist in worldGrid:
+            for char in sublist:
+                if char == 'A' or char == 'B' or char == 'C' or char == 'D':
+                    self.scroller.add(PlayerLayer(2600, 720, (worldGrid.index(sublist),sublist.index(char))), z=1)     
+        
         self.add(self.scroller)
 
 if __name__ == '__main__':

@@ -52,7 +52,6 @@ class ServerConnection(object):
     def write(self, data):
         if data != self.last:
             self.last = data
-            print "ding", repr(data)
             self.socket.send(data)
 
 class Player(Sprite):
@@ -80,7 +79,6 @@ class PlayerLayer(ScrollableLayer):
         self.players = dict()
 
     def on_key_press(self, key, modifiers):
-        print key
         if key == LEFT:
             serverConnection.write(pack_keydown(MOVELEFT))
         elif key == RIGHT:
@@ -128,13 +126,6 @@ class PlayerLayer(ScrollableLayer):
                 player.moveto.stop()
             player.moveto = MoveTo((x,y), 1/20.0)
             player.do(player.moveto)
-
-#        #write position
-#        player = self.players.get(self.cid, None)
-#        if player:
-#            x, y = player.target 
-#            position = pack_position(self.cid, 1, x, y)
-#            serverConnection.write(position)
 
 class GameLevelScene(Scene):
     def __init__(self):

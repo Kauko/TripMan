@@ -36,7 +36,7 @@ class Server:
 
         self.start_points = dict()
         for cid in ["A"]: #,"B","C","D"]:
-            self.start_points[cid] = self.getPlayerPosition(cid)
+            self.start_points[cid] = self.getPlayerStartPosition(cid)
 
     def descriptors(self):
         yield self.socket
@@ -81,16 +81,16 @@ class Server:
                     try:
                         mid = descriptor.recv(1)
                         if mid:
-                            print repr(mid)
                             length, unpacker = get_unpacker(mid)
                             if length:
                                 data = descriptor.recv(length)
                                 if ord(mid) == 6: #key up
                                     key = unpacker(data)
                                     player.velocity = 0
+                                    print "KEYUP", key, player.velocity
                                 elif ord(mid) == 7: #key down
                                     key = unpacker(data)
-                                    print "KEY", key
+                                    print "KEYDOWN", key
                                     player.direction = key
                                     player.velocity = 1
                     except socket.error, err:
@@ -99,35 +99,25 @@ class Server:
             for descriptor in self.sockets:
                 player = self.sockets[descriptor]
                 if player.velocity:
-                    if self.movePlayer(player, player.direction):
-                        print "bar"
+                    if self.isMoveLegal(player, player.direction):
+                        if player.direction == MOVELEFT:
+                            player.position = player.position[0]-1, player.position[1]
+                        elif player.direction == MOVERIGHT:
+                            player.position = player.position[0]+1, player.position[1]
+                        elif player.direction == MOVEUP:
+                            player.position = player.position[0], player.position[1]+1
+                        elif player.direction == MOVEDOWN:
+                            player.position = player.position[0], player.position[1]-1
+
                         for foo in self.sockets:
                             descriptor.send(pack_position(player.cid, 
                                                           player.direction,
                                                           player.position[0],
                                                           player.position[1]))
 
-    def movePlayer(self, player, movedir):
-        position = self.getPlayerPosition(player.cid)
-        if self.isMoveLegal(player, movedir):
-            if movedir == MOVELEFT:
-                self.worldGrid[position[1]][position[0]] = '0'
-                self.worldGrid[position[1]][position[0]-1] = player.cid
-            if movedir == MOVEUP:
-                self.worldGrid[position[1]][position[0]] = '0'
-                self.worldGrid[position[1]-1][position[0]] = player.cid
-            if movedir == MOVERIGHT:
-                self.worldGrid[position[1]][position[0]] = '0'
-                self.worldGrid[position[1]][position[0]+1] = player.cid
-            if movedir == MOVEDOWN:
-                self.worldGrid[position[1]][position[0]] = '0'
-                self.worldGrid[position[1]+1][position[0]] = player.cid
-            return True
-        return False
-
     def isMoveLegal(self, player, movedir):
-        position = self.getPlayerPosition(player.cid)
-        #print(position)
+        position = player.position
+        print(position)
         try:
             if movedir == MOVELEFT:
                 if self.worldGrid[position[1]][position[0]-1] == '1' or position[0] == 0:
@@ -154,7 +144,7 @@ class Server:
         except IndexError:
             return False
 
-    def getPlayerPosition(self, cid):
+    def getPlayerStartPosition(self, cid):
         for sublist in self.worldGrid:
             for char in sublist:
                 if char == cid:

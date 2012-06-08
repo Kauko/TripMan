@@ -9,16 +9,16 @@ def unpack_server_full(data):
     return struct.unpack("!11s", data)[0]
 
 def unpack_position(data):
-    #("!BcBII", 3, 'A', 1, 360, 450)
-    return struct.unpack("!cBII", data)
+    #("!BcBff", 3, 'A', 1, 360.5, 450.4)
+    return struct.unpack("!cBff", data)
 
 def unpack_eat(data):
-    #("!BcBII", 4, 'A', 1, 360, 450)
-    return struct.unpack("!cBII", data)
+    #("!BcBff", 4, 'A', 1, 360.5, 450.4)
+    return struct.unpack("!cBff", data)
 
 def unpack_dead(data):
-    #("!BcII", 5, 'A', 360, 450)
-    return struct.unpack("!cII", data)
+    #("!Bcff", 5, 'A', 360.5, 450.4)
+    return struct.unpack("!cff", data)
 
 unpackers = {'\x01': (1, unpack_cid),
              '\x02': (11, unpack_server_full),
@@ -37,11 +37,11 @@ def pack_server_full():
     return struct.pack("!B11s", 2, "server full")
 
 def pack_position(cid, direction, x, y):
-    return struct.pack("!BcBII", 3, cid, direction, x, y)
+    return struct.pack("!BcBff", 3, cid, direction, x, y)
 
 def pack_eat(cid, drug, x, y):
-    return struct.pack("!BcBII", 3, cid, drug, x, y)
+    return struct.pack("!BcBff", 3, cid, drug, x, y)
 
 def pack_dead(cid, x, y):
-    return struct.pack("!cII", cid, x, y)
+    return struct.pack("!cff", cid, x, y)
 

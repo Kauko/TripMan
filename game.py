@@ -71,18 +71,10 @@ class PlayerLayer(ScrollableLayer):
         self.chars_pressed.remove(key)
 
     def update(self, dt):
-        x, y = 0, 0
-        if LEFT in self.chars_pressed:
-            x -= 200 * dt
-        if UP in self.chars_pressed:
-            y += 200 * dt
-        if RIGHT in self.chars_pressed:
-            x += 200 * dt
-        if DOWN in self.chars_pressed:
-            y -= 200 * dt
-        self.movement = [x, y]
+        pass
 
     def update_network(self, dt):
+
         #read networkstuff
         mid, data = serverConnection.read()
         if mid:
@@ -91,6 +83,7 @@ class PlayerLayer(ScrollableLayer):
             self.cid = data
             sprite = Sprite('test.png', position=(320,240))
             self.add(sprite)
+            #self.movement = [320, 240]
             self.sprites[self.cid] = sprite
         elif mid == 3:
             cid, direction, x, y = data
@@ -106,12 +99,32 @@ class PlayerLayer(ScrollableLayer):
         #write position
         if self.cid is not None:
             player = self.sprites.get(self.cid, None)
-            dx, dy = self.movement
             x, y = player.position
-            if dx != 0 or dy != 0:
+            nx, ny = self.movement
+            
+            if x != nx or y != ny:
                 if self.cid:
-                    position = pack_position(self.cid, 1, x + dx, y + dy)
+                    position = pack_position(self.cid, 1, nx, ny)
                     serverConnection.write(position)
+
+        player = self.sprites.get(self.cid, None)
+        if not player:
+            return
+
+        x, y = player.position
+            
+        if LEFT in self.chars_pressed:
+            x -= 200 * dt
+        if UP in self.chars_pressed:
+            y += 200 * dt
+        if RIGHT in self.chars_pressed:
+            x += 200 * dt
+        if DOWN in self.chars_pressed:
+            y -= 200 * dt
+
+        print x, y
+        self.movement = [x, y]
+
         
 
 class GameLevelScene(Scene):

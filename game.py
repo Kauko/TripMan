@@ -119,8 +119,10 @@ class GameLevelScene(Scene):
         #self.scroller.add(bglayer)
         for sublist in worldGrid:
             for char in sublist:
-                if char == 'A' or char == 'B' or char == 'C' or char == 'D':
-                    self.scroller.add(PlayerLayer(2600, 720, (worldGrid.index(sublist),sublist.index(char))), z=1)     
+                if char == 'A':
+                    print("derp")
+                    self.scroller.add(PlayerLayer(2600, 720, (worldGrid.index(sublist),sublist.index(char))), z=1)
+                         
         
         self.add(self.scroller)
 

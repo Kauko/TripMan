@@ -120,9 +120,11 @@ class PlayerLayer(ScrollableLayer):
             player.do(player.moveto)
 
         #write position
-        x, y = player.target 
-        position = pack_position(self.cid, 1, x, y)
-        serverConnection.write(position)
+        player = self.players.get(self.cid, None)
+        if player:
+            x, y = player.target 
+            position = pack_position(self.cid, 1, x, y)
+            serverConnection.write(position)
 
 
 class GameLevelScene(Scene):

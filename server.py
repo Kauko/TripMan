@@ -33,7 +33,7 @@ class Server:
         self.socket.listen(4)
         self.running = True
         while self.running:
-            r, w, x = select(self.descriptors(), self.descriptors(), [], 0)
+            r, w, x = select(self.descriptors(), [], [], 1/20.0)
 
             for descriptor in r:
                 if descriptor == self.socket:
@@ -65,14 +65,14 @@ class Server:
                         print "%s: disconnected" % cid
                         del self.sockets[descriptor]
                     else:
-                        print repr(data)
                         for descriptor in self.sockets:
                             try:
+                                start = time.time()
                                 descriptor.send(data)
+                                print cid, time.time()-start
                             except socket.error, err:
                                 print "socket.error", repr(err)
                                 del self.sockets[descriptor]
-            time.sleep(1/60.0)
 
 if __name__ == "__main__":
     s = Server(("", 6660))

@@ -15,6 +15,10 @@ LEFT = 65361
 UP = 65362
 RIGHT = 65363
 DOWN = 65364
+MOVELEFT = 1
+MOVERIGHT = 3
+MOVEUP = 2
+MOVEDOWN = 4
 TILEWIDTH = 16
 TILEHEIGHT = 16
 
@@ -52,7 +56,6 @@ class PlayerLayer(ScrollableLayer):
 
     def __init__(self, width, height, start_position):
         super(PlayerLayer, self).__init__()
-        print(start_position)
         self.px_width = width
         self.px_height = height
         
@@ -60,6 +63,9 @@ class PlayerLayer(ScrollableLayer):
         self.schedule(self.update)
         self.sprites = dict()
         self.cid = None
+        
+        self.movedir = 0 #1 = left,2 = up,3 = right,4 = down
+        self.movespeed = 1
 
     def on_key_press(self, key, modifiers):
         self.chars_pressed.add(key)
@@ -70,24 +76,24 @@ class PlayerLayer(ScrollableLayer):
     def update(self, dt):
         player = self.sprites.get(self.cid, None)
         if player:
-            x, y = player.position
             if LEFT in self.chars_pressed:
-                x -= 2
+                self.movedir = MOVELEFT
             if UP in self.chars_pressed:
-                y += 2
+                self.movedir = MOVEUP
             if RIGHT in self.chars_pressed:
-                x += 2
+                self.movedir = MOVERIGHT
             if DOWN in self.chars_pressed:
-                y -= 2
-            if x != player.position[0] or y != player.position[1]:
+                self.movedir = MOVEDOWN
+            if self.get_ancestor(GameLevelScene).movePlayer(self.movedir) is not None:
                 if self.cid:
-                    position = pack_position(self.cid, 1, x, y)
-                    serverConnection.write(position)
+                    print("")
+                    #position = pack_position(self.cid, 1, x, y)
+                    #serverConnection.write(position)
 
         #read networkstuff
         mid, data = serverConnection.read()
-        if mid:
-            print repr(mid), repr(data)
+        #if mid:
+            #print repr(mid), repr(data)
         if mid == 1:
             self.cid = data
             sprite = Sprite('test.png', position=(320,240))
@@ -110,21 +116,61 @@ class GameLevelScene(Scene):
         self.scroller = ScrollingManager()
         bglayer = ScrollableLayer()
         f = open('level1.txt', "r")
-        worldGrid = []
+        self.worldGrid = []
         for line in f:
             line = line.replace('\n','')
-            worldGrid.append(list(line))
-        print(worldGrid)
+            self.worldGrid.append(list(line))
         #bglayer.add(Sprite('background.png', position=(1300, 360)))
         #self.scroller.add(bglayer)
-        for sublist in worldGrid:
+        for sublist in self.worldGrid:
             for char in sublist:
                 if char == 'A':
-                    print("derp")
-                    self.scroller.add(PlayerLayer(2600, 720, (worldGrid.index(sublist),sublist.index(char))), z=1)
+                    self.scroller.add(PlayerLayer(2600, 720, self.getPlayerPosition()), z=1)
                          
         
         self.add(self.scroller)
+        
+    def isMoveLegal(self, movedir):
+        position = self.getPlayerPosition()
+        print(position)
+        try:
+            if movedir == MOVELEFT:
+                if self.worldGrid[position[1]][position[0]-1] == 1 or position[0] == 0:
+                    return False
+                else:
+                    return True
+            elif movedir == MOVEUP:
+                if self.worldGrid[position[1]-1][position[0]] == 1 or position[1] == 0:
+                    return False
+                else:
+                    return True
+            elif movedir == MOVERIGHT:
+                if self.worldGrid[position[1]][position[0]+1] == 1: #or position[0] == len(self.worldGrid[position[1]])-1:
+                    return False
+                else:
+                    return True
+            elif movedir == MOVEDOWN:
+                if self.worldGrid[position[1]+1][position[0]] == 1:# or position[1] == len(self.worldGrid)-1:
+                    return False
+                else:
+                    return True
+        except IndexError:
+            return False
+        
+    def movePlayer(self, movedir):
+        position = self.getPlayerPosition()
+        if self.isMoveLegal(movedir):
+            print(movedir," MOVE IS LEGAL")
+        else:
+            return
+        
+        
+    def getPlayerPosition(self):
+        for sublist in self.worldGrid:
+            for char in sublist:
+                if char == 'A':
+                    return (sublist.index(char),self.worldGrid.index(sublist))
+        
 
 if __name__ == '__main__':
     serverConnection = ServerConnection('localhost', 6660)

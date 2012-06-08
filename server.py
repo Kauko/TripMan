@@ -61,6 +61,6 @@ class Server:
                             descriptor.send(data)
             time.sleep(1/20.0)
 
-
-s = Server(("", 6660))
-s.run()
+if __name__ == "__main__":
+    s = Server(("", 6660))
+    s.run()

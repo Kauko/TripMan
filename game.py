@@ -84,7 +84,7 @@ class PlayerLayer(ScrollableLayer):
 
     def update_network(self, dt):
         #read networkstuff
-         mid, data = serverConnection.read()
+        mid, data = serverConnection.read()
         if mid:
             print repr(mid), repr(data)
         if mid == 1:

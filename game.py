@@ -58,6 +58,9 @@ class PlayerLayer(ScrollableLayer):
         
         self.chars_pressed = set()
         self.schedule(self.update)
+        self.schedule_interval(self.update_network, 1/20.0)
+        
+        self.movement = [0, 0]
         self.sprites = dict()
         self.cid = None
 
@@ -68,22 +71,18 @@ class PlayerLayer(ScrollableLayer):
         self.chars_pressed.remove(key)
 
     def update(self, dt):
-        player = self.sprites.get(self.cid, None)
-        if player:
-            x, y = player.position
-            if LEFT in self.chars_pressed:
-                x -= 2
-            if UP in self.chars_pressed:
-                y += 2
-            if RIGHT in self.chars_pressed:
-                x += 2
-            if DOWN in self.chars_pressed:
-                y -= 2
-            if x != player.position[0] or y != player.position[1]:
-                if self.cid:
-                    position = pack_position(self.cid, 1, x, y)
-                    serverConnection.write(position)
+        x, y = 0, 0
+        if LEFT in self.chars_pressed:
+            x -= 2
+        if UP in self.chars_pressed:
+            y += 2
+        if RIGHT in self.chars_pressed:
+            x += 2
+        if DOWN in self.chars_pressed:
+            y -= 2
+        self.movement = [x, y]
 
+    def update_network(self, dt):
         #read networkstuff
         mid, data = serverConnection.read()
         if mid:
@@ -103,6 +102,17 @@ class PlayerLayer(ScrollableLayer):
             sprite.position = (x, y)
             self.get_ancestor(ScrollingManager).set_focus(x, y)
             #print time.time(), "POSITION", data
+
+        #write position
+        if self.cid is not None:
+            player = self.sprites.get(self.cid, None)
+            dx, dy = self.movement
+            x, y = player.position
+            if dx != 0 or dy != 0:
+                if self.cid:
+                    position = pack_position(self.cid, 1, x + dx, y + dy)
+                    serverConnection.write(position)
+        
 
 class GameLevelScene(Scene):
     def __init__(self):
@@ -127,6 +137,6 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
 
 if __name__ == '__main__':
-    serverConnection = ServerConnection('localhost', 6660)
+    serverConnection = ServerConnection('shell.jkry.org', 10066)
     director.init(width=1240, height=720)
     director.run(GameLevelScene())

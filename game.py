@@ -117,6 +117,8 @@ class PlayerLayer(ScrollableLayer):
         elif mid == 3:
             cid, direction, x, y = data
             player = self.players.get(cid, None)
+            x = x*40
+            y = y*40+20
             if not player:
                 player = Player(cid, "test.png", (x,y))
                 self.add(player)

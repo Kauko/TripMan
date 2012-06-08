@@ -66,8 +66,12 @@ class Server:
                     else:
                         print repr(data)
                         for descriptor in self.sockets:
-                            descriptor.send(data)
-            time.sleep(1/20.0)
+                            try:
+                                descriptor.send(data)
+                            except socket.error, err:
+                                print "socket.error", repr(err)
+                                del self.sockets[descriptor]
+            time.sleep(1/60.0)
 
 if __name__ == "__main__":
     s = Server(("", 6660))

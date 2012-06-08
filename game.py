@@ -1,3 +1,4 @@
+import time
 import select
 import socket
 
@@ -22,6 +23,7 @@ class ServerConnection(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         self.socket.connect((host, port))
         self.socket.setblocking(0)
+        self.last = None
 
     def read(self):
         r, _, _ = select.select([self.socket], [], [], 0)
@@ -34,12 +36,14 @@ class ServerConnection(object):
             if length:
                 data = self.socket.recv(length)
                 unpacked = unpacker(data)
-                return mid, unpacked
+                return ord(mid), unpacked
 
         return None, None
 
     def write(self, data):
-        self.socket.send(data)
+        if data != self.last:
+            self.last = data
+            self.socket.send(data)
 
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
@@ -73,13 +77,14 @@ class PlayerLayer(ScrollableLayer):
         if x != self.sprite.position[0] or y != self.sprite.position[1]:
             position = pack_position("Q", 1, x, y)
             serverConnection.write(position)
-            self.sprite.position = (x, y)
-            self.get_ancestor(ScrollingManager).set_focus(x, y)
 
         #read networkstuff
         mid, data = serverConnection.read()
-        if data:
-            print data
+        if mid == 3:
+            cid, direction, x, y = data
+            self.sprite.position = (x, y)
+            self.get_ancestor(ScrollingManager).set_focus(x, y)
+            #print time.time(), "POSITION", data
 
 class GameLevelScene(Scene):
     def __init__(self):

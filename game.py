@@ -115,8 +115,8 @@ class GameLevelScene(Scene):
             line = line.replace('\n','')
             worldGrid.append(list(line))
         print(worldGrid)
-        #bglayer.add(Sprite('background.png', position=(1300, 360)))
-        #self.scroller.add(bglayer)
+        bglayer.add(Sprite('background.png', position=(1300, 360)))
+        self.scroller.add(bglayer)
         for sublist in worldGrid:
             for char in sublist:
                 if char == 'A':

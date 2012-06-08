@@ -37,9 +37,8 @@ class Server:
             self.worldGrid.insert(0, list(lines[index].strip("\n").strip("\r")))
 
         self.start_points = dict()
-        for cid in ["A"]: #,"B","C","D"]:
+        for cid in ["A","B","C","D"]:
             self.start_points[cid] = self.getPlayerStartPosition(cid)
-            print "START", self.start_points[cid]
 
     def descriptors(self):
         yield self.socket
@@ -48,7 +47,6 @@ class Server:
             yield descriptor
 
     def generate_id(self):
-        return 'A'
         cid = chr(random.randint(65,68))
         while cid in self.sockets.values():
             cid = chr(random.randint(65,68))
@@ -73,7 +71,7 @@ class Server:
 
                     cid = self.generate_id()
                     print "%s: connected" % cid
-                    position = self.start_points["A"] 
+                    position = self.start_points[cid] 
                     player = Player(cid, position)
                     self.sockets[descriptor] = player
                     descriptor.send(pack_cid(cid))
@@ -90,12 +88,13 @@ class Server:
                                 if ord(mid) == 6: #key up
                                     key = unpacker(data)
                                     player.velocity = 0
-                                    print "KEYUP", key, player.velocity
                                 elif ord(mid) == 7: #key down
                                     key = unpacker(data)
-                                    print "KEYDOWN", key
                                     player.direction = key
                                     player.velocity = 1
+                        else:
+                            print "%s: disconnected" % player.cid
+                            del self.sockets[descriptor]
                     except socket.error, err:
                         print "socket.error", repr(err)
 
@@ -103,14 +102,15 @@ class Server:
                 player = self.sockets[descriptor]
                 if player.velocity:
                     if self.isMoveLegal(player, player.direction):
+                        x,y = player.position
                         if player.direction == MOVELEFT:
-                            player.position = player.position[0]-1, player.position[1]
+                            player.position = x-1, y 
                         elif player.direction == MOVERIGHT:
-                            player.position = player.position[0]+1, player.position[1]
+                            player.position = x+1, y 
                         elif player.direction == MOVEUP:
-                            player.position = player.position[0], player.position[1]+1
+                            player.position = x, y+1
                         elif player.direction == MOVEDOWN:
-                            player.position = player.position[0], player.position[1]-1
+                            player.position = x, y-1
 
                         for foo in self.sockets:
                             descriptor.send(pack_position(player.cid, 

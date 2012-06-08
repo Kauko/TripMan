@@ -29,14 +29,17 @@ class Server:
         self.players = dict()
 
         f = open('level1.txt', "r")
+        lines = f.readlines()
+        f.close()
+
         self.worldGrid = []
-        for line in f:
-            line = line.replace('\n','')
-            self.worldGrid.append(list(line))
+        for index in range(len(lines)):
+            self.worldGrid.insert(0, list(lines[index].strip("\n").strip("\r")))
 
         self.start_points = dict()
         for cid in ["A"]: #,"B","C","D"]:
             self.start_points[cid] = self.getPlayerStartPosition(cid)
+            print "START", self.start_points[cid]
 
     def descriptors(self):
         yield self.socket
@@ -116,39 +119,41 @@ class Server:
                                                           player.position[1]))
 
     def isMoveLegal(self, player, movedir):
-        position = player.position
-        print(position)
-        try:
-            if movedir == MOVELEFT:
-                if self.worldGrid[position[1]][position[0]-1] == '1' or position[0] == 0:
-                    return False
-                else:
-                    return True
-            elif movedir == MOVEUP:
-                if self.worldGrid[position[1]-1][position[0]] == '1' or position[1] == 0:
-                    return False
-                else:
-                    return True
-            elif movedir == MOVERIGHT:
-                if self.worldGrid[position[1]][position[0]+1] == '1': #or position[0] == len(self.worldGrid[position[1]])-1:
-                    return False
-                else:
-                    return True
-            elif movedir == MOVEDOWN:
-                if self.worldGrid[position[1]+1][position[0]] == '1':# or position[1] == len(self.worldGrid)-1:
-                    return False
-                else:
-                    return True
-            else:
+        x, y = player.position
+        if movedir == MOVELEFT:
+            if self.worldGrid[y][x-1] == "1" or x <= 0:
                 return False
-        except IndexError:
+            else:
+                return True
+        elif movedir == MOVEUP:
+            try:
+                if self.worldGrid[y+1][x] == "1" or y >= len(self.worldGrid)-1:
+                    return False
+                else:
+                    return True
+            except IndexError:
+                return False
+        elif movedir == MOVERIGHT:
+            try:
+                if self.worldGrid[y][x+1] == "1" or x >= len(self.worldGrid[0])-1:
+                    return False
+                else:
+                    return True
+            except IndexError:
+                return False
+        elif movedir == MOVEDOWN:
+            if self.worldGrid[y-1][x] == "1" or y <= 0:
+                return False
+            else:
+                return True
+        else:
             return False
 
     def getPlayerStartPosition(self, cid):
-        for sublist in self.worldGrid:
-            for char in sublist:
-                if char == cid:
-                    return (sublist.index(char),self.worldGrid.index(sublist))
+        for index, row in enumerate(self.worldGrid):
+            for jindex, col in enumerate(row):
+                if col == cid:
+                    return (jindex, index)
 
 if __name__ == "__main__":
     s = Server(("", 10066))

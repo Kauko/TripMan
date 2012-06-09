@@ -98,13 +98,13 @@ class PlayerLayer(ScrollableLayer):
 #                        6: Waves( waves=4, amplitude=20, hsin=False, 
 #                           vsin=True, grid=(16,16), duration=10)}
     
-        self.reality = Sprite('pics/reality.png', position=(5,0), anchor=(1280, 0))
+        self.reality = Sprite('pics/reality.png', position=(0,0), anchor=(1280, 0))
         self.add(self.reality, z=3)
 
-        self.od = Sprite('pics/od.png', position=(745,0), anchor=(0,0))
+        self.od = Sprite('pics/od.png', position=(800,0), anchor=(0,0))
         self.add(self.od, z=3)
 
-        self.game_speed = 15;
+        self.game_speed = 50;
 
 
     def on_key_press(self, key, modifiers):
@@ -133,9 +133,9 @@ class PlayerLayer(ScrollableLayer):
 
         player = self.players.get(self.cid, None)
         if player:
-            if player.y > 315 and player.y < 315 + 720:
-                self.reality.y = player.y - 320
-                self.od.y = player.y - 320
+            if player.y > 310 and player.y < 310 + 720:
+                self.reality.y = player.y - 310
+                self.od.y = player.y - 310
 
             (x, y) = player.position 
             self.get_ancestor(ScrollingManager).set_focus(int(x), int(y))
@@ -266,6 +266,6 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('localhost', 10066)
+    serverConnection = ServerConnection('', 10066)
     director.init(width=1280, height=720)#, fullscreen=True)
     director.run(GameLevelScene())

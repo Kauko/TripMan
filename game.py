@@ -88,14 +88,15 @@ class PlayerLayer(ScrollableLayer):
         self.movespeed = 1
         self.players = dict()
         self.effects = None
-        
-    def initEffectFunctions(self):
-        self.effects = {2:self.get_ancestor(GameLevelScene).do( Ripple3D(center=(320,240), radius=240, waves=15, amplitude=60, duration=20, grid=(32,24) ) ),
-                        3:self.get_ancestor(GameLevelScene).do( Lens3D(center=(320,240), radius=150, grid=(16,16), duration=10) ),
-                        4:self.get_ancestor(GameLevelScene).do( Liquid( waves=5, amplitude=40, grid=(16,16), duration=10) ),
-                        5:self.get_ancestor(GameLevelScene).do( Shaky3D( randrange=6, grid=(4,4), duration=10) ),
-                        6:self.get_ancestor(GameLevelScene).do( Twirl( center=(320,240), twirls=5, amplitude=1, grid=(16,12), duration=10) ),
-                        7:self.get_ancestor(GameLevelScene).do( Waves( waves=4, amplitude=20, hsin=False, vsin=True, grid=(16,16), duration=10) ),}
+
+        self.effects = {2 : Ripple3D(center=(320,240), radius=240, waves=15, amplitude=60, duration=20, grid=(32,24)),
+                        3 : Lens3D(center=(320,240), radius=150, grid=(16,16), duration=10),
+                        4 : Liquid( waves=5, amplitude=40, grid=(16,16), duration=10),
+                        5 : Shaky3D( randrange=6, grid=(4,4), duration=10),
+                        6 : Twirl( center=(320,240), twirls=5, amplitude=1, grid=(16,12), duration=10),
+                        7 : Waves( waves=4, amplitude=20, hsin=False, vsin=True, grid=(16,16), duration=10),
+                        }
+
     
     def on_key_press(self, key, modifiers):
         if key == LEFT:
@@ -152,10 +153,8 @@ class PlayerLayer(ScrollableLayer):
         elif mid == 4:
             cid,effect, x, y = data
             if effect != 0:
-                if self.effects is None:
-                    self.initEffectFunctions()
                 chosenEffect = self.effects[effect]
-                chosenEffect()   
+                self.get_ancestor(GameLevelScene).do(chosenEffect)
 
 def loadLevel(filename):
     level = list()

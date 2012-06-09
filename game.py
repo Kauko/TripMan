@@ -97,10 +97,10 @@ class PlayerLayer(ScrollableLayer):
         self.sounds[6] = pyglet.media.load("sounds/wuhuu.wav", streaming=False)
         self.sounds[7] = pyglet.media.load("sounds/lighter.wav", streaming=False)
 
-        self.reality = Sprite('pics/reality.png', position=(0,0), anchor=(1280, 360))
+        self.reality = Sprite('pics/reality.png', position=(0,360), anchor=(1280, 360))
         self.add(self.reality, z=3)
 
-        self.od = Sprite('pics/od.png', position=(800,0), anchor=(0,360))
+        self.od = Sprite('pics/od.png', position=(800,360), anchor=(0,360))
         self.add(self.od, z=3)
 
         self.game_speed = 70;

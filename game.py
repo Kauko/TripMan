@@ -4,6 +4,7 @@ import socket
 
 import pyglet
 
+import cocos
 from cocos.director import *
 from cocos.scene import *
 from cocos.layer import *
@@ -117,8 +118,8 @@ class PlayerLayer(ScrollableLayer):
         elif mid == 3:
             cid, direction, x, y = data
             player = self.players.get(cid, None)
-            x = x*40
-            y = y*40+20
+            x = x * 40
+            y = y * 40 + 20 # nolla = alareuna tiedostalla ja kasvaa yloes
             if not player:
                 player = Player(cid, "test.png", (x,y))
                 self.add(player)
@@ -129,12 +130,34 @@ class PlayerLayer(ScrollableLayer):
             player.moveto = MoveTo((x,y), 1/20.0)
             player.do(player.moveto)
 
+def loadLevel(filename):
+    level = list()
+    for line in open(filename):
+        row = list()
+        for char in line.strip():
+            row.append(char)
+        level.append(row)
+    return level
+
+
 class GameLevelScene(Scene):
     def __init__(self):
         super(GameLevelScene, self).__init__()
         self.scroller = ScrollingManager()
         bglayer = ScrollableLayer()
         bglayer.add(Sprite('background.png', position=(1300, 360)))
+
+        tiles = cocos.batch.BatchNode()
+        level = loadLevel('level1.txt')
+        for j, line in enumerate(level[::-1]):
+            for i, code in enumerate(line):
+                if code == '1':
+                    tile = Sprite('brickwall.png')
+                    tile.position = (i*40 + 20, (j*40+20))
+                    tiles.add(tile)
+        bglayer.add(tiles, z=1)
+        self.scroller.add(bglayer)
+
         self.scroller.add(bglayer)
         self.scroller.add(PlayerLayer(2600, 720), z=1)
         self.add(self.scroller)

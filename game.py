@@ -278,6 +278,9 @@ class GameLevelScene(Scene):
 
         self.scroller.add(PlayerLayer(width, 1440), z=1)
         self.add(self.scroller)
+
+        pyglet.media.load('sounds/music.wav', streaming=False).play()
+
         
 if __name__ == '__main__':
     serverConnection = ServerConnection('', 10066)

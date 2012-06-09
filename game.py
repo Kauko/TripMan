@@ -181,21 +181,23 @@ class PlayerLayer(ScrollableLayer):
             cid,effect, x, y = data
             if effect != 0 and self.get_ancestor(GameLevelScene).boosts[(x,y)].visible:
                 if effect == 2:
-                    current_effect = FlipY3D(grid=(1,1),duration=10)
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                            grid=(16,16), duration=10)
                 elif effect == 3:
-                    current_effect = Shaky3D(randrange=6, grid=(4,4),
-                                             duration=10)
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                            grid=(16,16), duration=10)
                 elif effect == 4:
                     current_effect = Liquid(waves=5, amplitude=40, 
                                             grid=(16,16), duration=10)
                 elif effect == 5:
-                    current_effect = Twirl(center=(320,240), twirls=5,
-                                           amplitude=1, grid=(16,12),
-                                           duration=10)
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                            grid=(16,16), duration=10)
                 elif effect == 6:
-                    current_effect = Waves(waves=4, amplitude=20, 
-                                           hsin=False, vsin=True, 
-                                           grid=(16,16), duration=10)
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                            grid=(16,16), duration=10)
+                elif effect == 7:
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                            grid=(16,16), duration=10)
 
                 self.get_ancestor(GameLevelScene).do(current_effect+StopGrid())
                 self.get_ancestor(GameLevelScene).boosts[(x,y)].visible = False

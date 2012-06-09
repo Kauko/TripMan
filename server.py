@@ -2,7 +2,7 @@ import time
 import random
 import socket
 from select import select
-from messages import get_unpacker, pack_cid, pack_server_full, pack_position, pack_eat
+import messages
 
 MOVELEFT = 1
 MOVERIGHT = 3
@@ -16,6 +16,8 @@ E_SHAKY = 5
 E_TWIRL = 6
 E_WAVES = 7
 
+E_WIN = 9
+
 class Player:
     def __init__(self, cid, position):
         self.cid = cid
@@ -23,6 +25,7 @@ class Player:
         self.direction = 1
         self.velocity = 0
         self.effect = 0
+        self.alive = 1
 
 class Server:
     def __init__(self, address):
@@ -67,13 +70,14 @@ class Server:
         self.socket.listen(4)
         self.running = True
         while self.running:
-            r, w, x = select(self.descriptors(), [], [], 1/20.0)
+            start = time.time()
+            r, w, x = select(self.descriptors(), [], [], 0)
 
             for descriptor in r:
                 if descriptor == self.socket:
                     descriptor, address = self.socket.accept()
                     if len(self.sockets) > 3:
-                        descriptor.send(pack_server_full())
+                        descriptor.send(messages.pack_server_full())
                         descriptor.close()
                         continue
 
@@ -82,7 +86,7 @@ class Server:
                     position = self.start_points[cid] 
                     player = Player(cid, position)
                     self.sockets[descriptor] = player
-                    descriptor.send(pack_cid(cid, position[0], position[1]))
+                    descriptor.send(messages.pack_cid(cid, position[0], position[1]))
                 elif descriptor in self.sockets:
                     player = self.sockets[descriptor]
 
@@ -90,7 +94,7 @@ class Server:
                     try:
                         mid = descriptor.recv(1)
                         if mid:
-                            length, unpacker = get_unpacker(mid)
+                            length, unpacker = messages.get_unpacker(mid)
                             if length:
                                 data = descriptor.recv(length)
                                 if ord(mid) == 6: #key up
@@ -122,19 +126,32 @@ class Server:
                         
                         self.checkTile(player)
                         
+                        pos_msg = messages.pack_position(player.cid,
+                                                         player.direction,
+                                                         player.position[0],
+                                                         player.position[1])
                         for client in self.sockets:
-                            client.send(pack_position(player.cid, 
-                                                      player.direction,
-                                                      player.position[0],
-                                                      player.position[1]))
+                            client.send(pos_msg)
                         
                 if player.effect:
+                    eat_msg = messages.pack_eat(player.cid,
+                                                player.effect,
+                                                player.position[0],
+                                                player.position[1])
                     for client in self.sockets:
-                        client.send(pack_eat(player.cid, 
-                                             player.effect,
-                                             player.position[0],
-                                             player.position[1]))
+                        client.send(eat_msg)
                     player.effect = 0
+
+                if not player.alive:
+                    death_msg = messages.pack_death(player.cid,
+                                                    player.position[0],
+                                                    player.position[1])
+                    for client in self.sockets:
+                        client.send(death_msg)
+
+            snooze = 1/20.0 - (time.time()-start)
+            if snooze > 0:
+                time.sleep(snooze)
 
     def isMoveLegal(self, player, movedir):
         x, y = player.position
@@ -182,6 +199,8 @@ class Server:
                 player.effect = E_TWIRL
             elif self.worldGrid[y][x] == str(E_WAVES):
                 player.effect = E_WAVES
+            elif self.worldGrid[y][x] == str(E_WIN):
+                player.effect = E_WIN
             else:
                 player.effect = 0
         else:

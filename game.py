@@ -9,7 +9,7 @@ from cocos.director import *
 from cocos.scene import *
 from cocos.layer import *
 from cocos.sprite import *
-from cocos.actions.interval_actions import MoveTo
+from cocos.actions.interval_actions import * 
 from cocos.actions.basegrid_actions import StopGrid
 from cocos.actions.grid3d_actions import *
 from messages import get_unpacker, pack_keyup, pack_keydown
@@ -89,17 +89,14 @@ class PlayerLayer(ScrollableLayer):
         self.effects = None
         self.current_effect = 0
 
-        self.effects = {2: Ripple3D(center=(320,240), radius=240, waves=15,
-                           amplitude=60, duration=20, grid=(32,24)),
-                        3: Lens3D(center=(320,240), radius=150, grid=(16,16),
-                           duration=10),
-                        4: Liquid(waves=5, amplitude=40, grid=(16,16),
-                           duration=10),
-                        5: Shaky3D( randrange=6, grid=(4,4), duration=10),
-                        6: Twirl( center=(320,240), twirls=5, amplitude=1,
-                           grid=(16,12), duration=10),
-                        7: Waves( waves=4, amplitude=20, hsin=False, 
-                           vsin=True, grid=(16,16), duration=10)}
+#        self.effects = {2: FlipY3D(grid=(1,1),duration=10),
+#                        3: Shaky3D( randrange=6, grid=(4,4), duration=10),
+#                        4: Liquid(waves=5, amplitude=40, grid=(16,16),
+#                           duration=10),
+#                        5: Twirl( center=(320,240), twirls=5, amplitude=1,
+##                           grid=(16,12), duration=10),
+#                        6: Waves( waves=4, amplitude=20, hsin=False, 
+#                           vsin=True, grid=(16,16), duration=10)}
     
     def on_key_press(self, key, modifiers):
         if key == LEFT:
@@ -132,6 +129,7 @@ class PlayerLayer(ScrollableLayer):
         mid, data = serverConnection.read()
         if mid:
             print repr(mid), repr(data)
+        if mid == 1:
             self.cid, x, y = data
             x = x * 40 + 20
             y = y * 40 + 20
@@ -158,9 +156,29 @@ class PlayerLayer(ScrollableLayer):
             cid,effect, x, y = data
             if effect != 0:
                 if self.current_effect:
-                    self.current_effect.stop()
-                self.current_effect = self.effects[effect]
-                self.get_ancestor(GameLevelScene).do(self.current_effect)
+                    print "halt"
+                    #self.current_effect.stop()
+                    #self.get_ancestor(GameLevelScene).do(StopGrid())
+
+                if effect == 2:
+                    current_effect = FlipY3D(grid=(1,1),duration=10)
+                elif effect == 3:
+                    current_effect = Shaky3D(randrange=6, grid=(4,4),
+                                                  duration=10)
+                elif effect == 4:
+                    current_effect = Liquid(waves=5, amplitude=40, 
+                                                 grid=(16,16), duration=10)
+                elif effect == 5:
+                    current_effect = Twirl(center=(320,240), twirls=5,
+                                                amplitude=1, grid=(16,12),
+                                                duration=10)
+                elif effect == 6:
+                    current_effect = Waves(waves=4, amplitude=20, 
+                                                hsin=False, vsin=True, 
+                                                grid=(16,16), duration=10)
+
+#                self.current_effect = self.effects[effect]
+                self.get_ancestor(GameLevelScene).do(current_effect+StopGrid())
 
 def loadLevel(filename):
     level = list()

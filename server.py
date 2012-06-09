@@ -36,7 +36,6 @@ class Server:
         self.socket.bind(self.address)
         self.running = False
         self.sockets = dict()
-        self.players = dict()
 
         f = open('levels/level2.txt', "r")
         lines = f.readlines()
@@ -74,6 +73,7 @@ class Server:
         remove = set()
         self.socket.listen(4)
         self.running = True
+        self.start_time = False
         while self.running:
             start = time.time()
             r, w, x = select(self.descriptors(), [], [], 0)
@@ -86,6 +86,9 @@ class Server:
                         descriptor.close()
                         continue
 
+                    if self.start_time is False:
+                        self.start_time = time.time() + 10
+                        print "New game starts in 10 seconds"
                     cid = self.generate_id()
                     print "%s: connected" % cid
                     position = self.start_points[cid] 
@@ -103,7 +106,7 @@ class Server:
                         mid = descriptor.recv(1)
                         if mid:
                             length, unpacker = messages.get_unpacker(mid)
-                            if length:
+                            if length and self.start_time == True:
                                 data = descriptor.recv(length)
                                 if not data:
                                     remove.add(descriptor)
@@ -121,6 +124,19 @@ class Server:
                         print "socket.error", repr(err)
 
             for descriptor in self.sockets:
+                if self.start_time not in [False, True]:
+                    if time.time() > self.start_time:
+                        self.start_time = True
+                        start_msg = messages.pack_start(10)
+                        for client in self.sockets:
+                            try:
+                                client.send(start_msg)
+                            except socket.error, err:
+                                remove.add(client)
+                        print "New game started"
+                elif self.start_time == False:
+                    continue
+
                 player = self.sockets[descriptor]
                 if player.velocity:
                     if self.isMoveLegal(player, player.direction):
@@ -176,6 +192,11 @@ class Server:
                     del self.sockets[client]
                 except KeyError:
                     pass
+
+            if self.start_time == True and len(self.sockets) <= 0:
+                self.start_time = False
+                print "Server ready for new game"
+
             snooze = 1/20.0 - (time.time()-start)
             if snooze > 0:
                 time.sleep(snooze)

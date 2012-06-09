@@ -81,9 +81,8 @@ class Server:
                     print "%s: connected" % cid
                     position = self.start_points[cid] 
                     player = Player(cid, position)
-                    player.effect = 0
                     self.sockets[descriptor] = player
-                    descriptor.send(pack_cid(cid))
+                    descriptor.send(pack_cid(cid, position[0], position[1]))
                 elif descriptor in self.sockets:
                     player = self.sockets[descriptor]
 

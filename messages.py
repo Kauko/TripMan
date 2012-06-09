@@ -1,8 +1,8 @@
 import struct
 
 def unpack_cid(data):
-    #("!Bc", 1,'A')
-    return struct.unpack("!c", data)[0]
+    #("!Bc", 1,'A', 320, 240)
+    return struct.unpack("!cff", data)
 
 def unpack_server_full(data):
     #("!B11s", 2, "server full")
@@ -28,7 +28,7 @@ def unpack_keydown(data):
     #("!BB", 7, 1)
     return struct.unpack("!B", data)[0]
 
-unpackers = {'\x01': (1, unpack_cid),
+unpackers = {'\x01': (9, unpack_cid),
              '\x02': (11, unpack_server_full),
              '\x03': (10, unpack_position),
              '\x04': (10, unpack_eat),
@@ -40,8 +40,8 @@ def get_unpacker(mid):
     return unpackers.get(mid, (None, None))
 
 
-def pack_cid(cid):
-    return struct.pack("!Bc", 1, cid)
+def pack_cid(cid, x, y):
+    return struct.pack("!Bcff", 1, cid, x, y)
 
 def pack_server_full():
     return struct.pack("!B11s", 2, "server full")

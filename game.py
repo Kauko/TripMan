@@ -130,8 +130,10 @@ class PlayerLayer(ScrollableLayer):
         if mid:
             print repr(mid), repr(data)
         if mid == 1:
-            self.cid = data
-            player = Player(self.cid, "test.png", (320,240))
+            self.cid, x, y = data
+            x = x * 40
+            y = y * 40 + 20
+            player = Player(self.cid, "test.png", (x,y))
             self.add(player)
             self.players[self.cid] = player
         elif mid == 3:

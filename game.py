@@ -97,7 +97,17 @@ class PlayerLayer(ScrollableLayer):
 ##                           grid=(16,12), duration=10),
 #                        6: Waves( waves=4, amplitude=20, hsin=False, 
 #                           vsin=True, grid=(16,16), duration=10)}
-    
+
+
+        self.sounds = dict()
+        self.sounds[2] = pyglet.media.load("sounds/burb.wav", streaming=False)
+        self.sounds[3] = pyglet.media.load("sounds/sniff.wav", streaming=False)
+        self.sounds[4] = pyglet.media.load("sounds/gulp.wav", streaming=False)
+        self.sounds[5] = pyglet.media.load("sounds/hehe.wav", streaming=False)
+        self.sounds[6] = pyglet.media.load("sounds/wuhuu.wav", streaming=False)
+        self.sounds[7] = pyglet.media.load("sounds/lighter.wav", streaming=False)
+
+
         self.reality = Sprite('pics/reality.png', position=(0,0), anchor=(1280, 0))
         self.add(self.reality, z=3)
 
@@ -198,6 +208,9 @@ class PlayerLayer(ScrollableLayer):
                 
                 self.get_ancestor(GameLevelScene).boosts[(x,y)].visible = False
 
+                if effect in self.sounds:
+                    self.sounds[effect].play()
+
 def loadLevel(filename):
     level = list()
     for line in open(filename):
@@ -212,7 +225,7 @@ class GameLevelScene(Scene):
     def __init__(self):
         super(GameLevelScene, self).__init__()
         self.scroller = ScrollingManager()
- 
+
         tiles = cocos.batch.BatchNode()
         self.boosts = {}
         level = loadLevel('levels/level2.txt')
@@ -255,6 +268,7 @@ class GameLevelScene(Scene):
                     boost.position = (i*40 + 20, (j*40+20))
                     self.boosts[(i,j)]=boost
                     bglayer.add(boost, z=2)
+
         width = width*40
         bglayer.px_width = width
         bglayer.px_height = 1440

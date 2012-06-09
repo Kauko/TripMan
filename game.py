@@ -67,9 +67,7 @@ class Player(Sprite):
     def __init__(self, cid, image, position):
         Sprite.__init__(self, image, position=position)
         self.cid = cid
-        self.target = self.position
         self.moveto = None
-        
 
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
@@ -88,6 +86,7 @@ class PlayerLayer(ScrollableLayer):
         self.movespeed = 1
         self.players = dict()
         self.effects = None
+        self.current_effect = 0
 
         self.effects = {2 : Ripple3D(center=(320,240), radius=240, waves=15, amplitude=60, duration=20, grid=(32,24)),
                         3 : Lens3D(center=(320,240), radius=150, grid=(16,16), duration=10),
@@ -155,8 +154,10 @@ class PlayerLayer(ScrollableLayer):
         elif mid == 4:
             cid,effect, x, y = data
             if effect != 0:
-                chosenEffect = self.effects[effect]
-                self.get_ancestor(GameLevelScene).do(chosenEffect)
+                if self.current_effect:
+                    self.current_effect.stop()
+                self.current_effect = self.effects[effect]
+                self.get_ancestor(GameLevelScene).do(self.current_effect)
 
 def loadLevel(filename):
     level = list()
@@ -175,7 +176,7 @@ class GameLevelScene(Scene):
  
         tiles = cocos.batch.BatchNode()
         level = loadLevel('level2.txt')
-        width = 0
+        width = 1280
         for j, line in enumerate(level[::-1]):
             width = len(line)
             for i, code in enumerate(line):
@@ -197,5 +198,5 @@ class GameLevelScene(Scene):
         
 if __name__ == '__main__':
     serverConnection = ServerConnection('localhost', 10066)
-    director.init(width=1280, height=720, fullscreen=True)
+    director.init(width=1280, height=720)#, fullscreen=True)
     director.run(GameLevelScene())

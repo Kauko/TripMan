@@ -43,10 +43,12 @@ class ServerConnection(object):
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        self.socket.connect((host, port))
-        self.socket.setblocking(0)
         self.last = None
+
+    def connect(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        self.socket.connect((self.host, self.port))
+        self.socket.setblocking(0)
 
     def read(self):
         r, _, _ = select.select([self.socket], [], [], 0)
@@ -288,7 +290,7 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
 
         pyglet.media.load('sounds/music.wav', streaming=False).play()
-
+        serverConnection.connect()
 
 class GameOverScene(Scene):
     def __init__(self):
@@ -382,7 +384,7 @@ def exit():
     print 'Thank you for playing'
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('', 10066)
+    serverConnection = ServerConnection('shell.jkry.org', 10066)
     director.init(width=1280, height=720)#, fullscreen=True)
     scene = Scene()
     scene.add(MultiplexLayer(MainMenu(), Credits()), z=1)

@@ -86,7 +86,10 @@ class Server:
                     position = self.start_points[cid] 
                     player = Player(cid, position)
                     self.sockets[descriptor] = player
-                    descriptor.send(messages.pack_cid(cid, position[0], position[1]))
+                    try:
+                        descriptor.send(messages.pack_cid(cid, position[0], position[1]))
+                    except socket.error, err:
+                        remove.add(client)
                 elif descriptor in self.sockets:
                     player = self.sockets[descriptor]
 
@@ -97,6 +100,8 @@ class Server:
                             length, unpacker = messages.get_unpacker(mid)
                             if length:
                                 data = descriptor.recv(length)
+                                if not data:
+                                    remove.add(descriptor)
                                 if ord(mid) == 5:
                                     player.alive = False
                                 elif ord(mid) == 6: #key up
@@ -106,8 +111,7 @@ class Server:
                                     player.direction = key
                                     player.velocity = 1
                         else:
-                            print "%s: disconnected" % player.cid
-                            del self.sockets[descriptor]
+                            remove.add(descriptor)
                     except socket.error, err:
                         print "socket.error", repr(err)
 
@@ -151,6 +155,7 @@ class Server:
                     player.effect = 0
 
                 if not player.alive:
+                    remove.add(player)
                     death_msg = messages.pack_death(player.cid,
                                                     player.position[0],
                                                     player.position[1])
@@ -162,6 +167,8 @@ class Server:
 
             for client in remove:
                 try:
+                    player = self.sockets[client]
+                    print "%s: disconnected" % player.cid
                     del self.sockets[client]
                 except KeyError:
                     pass

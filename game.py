@@ -13,7 +13,6 @@ from cocos.actions.interval_actions import *
 from cocos.actions.basegrid_actions import StopGrid
 from cocos.actions.grid3d_actions import *
 from messages import get_unpacker, pack_keyup, pack_keydown
-from testing import GameLevelScene
 
 LEFT = 65361
 UP = 65362

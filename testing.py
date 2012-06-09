@@ -3,6 +3,7 @@ import select
 import socket
 
 import pyglet
+from pyglet.gl import *
 
 import cocos
 from cocos.director import *

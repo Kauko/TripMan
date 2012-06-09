@@ -16,7 +16,7 @@ def unpack_eat(data):
     #("!BcBff", 4, 'A', 1, 360.5, 450.4)
     return struct.unpack("!cBff", data)
 
-def unpack_dead(data):
+def unpack_death(data):
     #("!Bcff", 5, 'A', 360.5, 450.4)
     return struct.unpack("!cff", data)
 
@@ -32,7 +32,7 @@ unpackers = {'\x01': (9, unpack_cid),
              '\x02': (11, unpack_server_full),
              '\x03': (10, unpack_position),
              '\x04': (10, unpack_eat),
-             '\x05': (9, unpack_dead),
+             '\x05': (9, unpack_death),
              '\x06': (1, unpack_keyup),
              '\x07': (1, unpack_keydown)}
 
@@ -52,7 +52,7 @@ def pack_position(cid, direction, x, y):
 def pack_eat(cid, drug, x, y):
     return struct.pack("!BcBff", 4, cid, drug, x, y)
 
-def pack_dead(cid, x, y):
+def pack_death(cid, x, y):
     return struct.pack("!Bcff", 5, cid, x, y)
 
 def pack_keyup(key):

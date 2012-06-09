@@ -58,15 +58,20 @@ class Server:
             yield descriptor
 
     def generate_id(self):
-        cid = chr(random.randint(65,68))
-        while cid in self.sockets.values():
+        cid = False
+        while not cid:
             cid = chr(random.randint(65,68))
+            for descriptor in self.sockets:
+                player = self.sockets[descriptor]
+                if player.cid == cid:
+                    cid = False
         return cid
 
     def run(self):
         if self.running:
             return
 
+        remove = set()
         self.socket.listen(4)
         self.running = True
         while self.running:
@@ -115,7 +120,6 @@ class Server:
                     except socket.error, err:
                         print "socket.error", repr(err)
 
-            remove = set()
             for descriptor in self.sockets:
                 player = self.sockets[descriptor]
                 if player.velocity:

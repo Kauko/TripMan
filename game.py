@@ -4,6 +4,7 @@ import select
 import socket
 
 import pyglet
+from pyglet.window import key
 
 import cocos
 from cocos.director import *
@@ -81,7 +82,8 @@ class PlayerLayer(ScrollableLayer):
         super(PlayerLayer, self).__init__()
         self.px_width = width
         self.px_height = height
-        
+        self.delay = 0
+
         self.schedule(self.update)
         self.schedule_interval(self.update_network, 1/60.0)
         
@@ -131,8 +133,10 @@ class PlayerLayer(ScrollableLayer):
             serverConnection.write(messages.pack_keyup(MOVEDOWN))
 
     def update(self, dt):
-        self.reality.x += self.game_speed * dt
-        self.od.x += self.game_speed * dt
+        if self.delay > 60 * 2:
+            self.reality.x += self.game_speed * dt
+            self.od.x += self.game_speed * dt
+        self.delay += 1
 
         player = self.players.get(self.cid, None)
         if player:
@@ -306,7 +310,8 @@ class GameOverLayer(Layer):
         self.add(self.gameOver)
 
     def on_key_release(self, symbol, modifiers):
-        director.pop()
+        if symbol == key.ENTER:
+            director.pop()
 
 class MainMenu(Menu):
 

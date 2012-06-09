@@ -132,11 +132,10 @@ class PlayerLayer(ScrollableLayer):
         mid, data = serverConnection.read()
         if mid:
             print repr(mid), repr(data)
-        if mid == 1:
             self.cid, x, y = data
             x = x * 40 + 20
             y = y * 40 + 20
-            player = Player(self.cid, "test.png", (x,y))
+            player = Player(self.cid, "pics/test.png", (x,y))
             self.add(player)
             self.players[self.cid] = player
         elif mid == 3:
@@ -146,7 +145,7 @@ class PlayerLayer(ScrollableLayer):
             x = x * 40 + 20
             y = y * 40 + 20 # nolla = alareuna tiedostalla ja kasvaa yloes
             if not player:
-                player = Player(cid, "test.png", (x,y))
+                player = Player(cid, "pics/test.png", (x,y))
                 self.add(player)
                 self.players[cid] = player
 
@@ -179,13 +178,13 @@ class GameLevelScene(Scene):
         self.scroller = ScrollingManager()
  
         tiles = cocos.batch.BatchNode()
-        level = loadLevel('level2.txt')
+        level = loadLevel('levels/level2.txt')
         width = 1280
         for j, line in enumerate(level[::-1]):
             width = len(line)
             for i, code in enumerate(line):
                 if code == '1':
-                    tile = Sprite('brickwall.png')
+                    tile = Sprite('pics/brickwall.png')
                     tile.position = (i*40 + 20, (j*40+20))
                     tiles.add(tile)
 

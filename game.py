@@ -127,7 +127,7 @@ class PlayerLayer(ScrollableLayer):
     def update_network(self, dt):
         #read networkstuff
         mid, data = serverConnection.read()
-        if mid:
+        if mid == 1:
             print repr(mid), repr(data)
         if mid == 1:
             self.cid, x, y = data
@@ -154,7 +154,7 @@ class PlayerLayer(ScrollableLayer):
         
         elif mid == 4:
             cid,effect, x, y = data
-            if effect != 0:
+            if effect != 0 and self.get_ancestor(GameLevelScene).boosts[(x,y)].visible:
                 if self.current_effect:
                     print "halt"
                     #self.current_effect.stop()
@@ -179,6 +179,8 @@ class PlayerLayer(ScrollableLayer):
 
 #                self.current_effect = self.effects[effect]
                 self.get_ancestor(GameLevelScene).do(current_effect+StopGrid())
+                
+                self.get_ancestor(GameLevelScene).boosts[(x,y)].visible = False
 
 def loadLevel(filename):
     level = list()
@@ -196,8 +198,10 @@ class GameLevelScene(Scene):
         self.scroller = ScrollingManager()
  
         tiles = cocos.batch.BatchNode()
+        self.boosts = {}
         level = loadLevel('levels/level2.txt')
         width = 1280
+        bglayer = ScrollableLayer()
         for j, line in enumerate(level[::-1]):
             width = len(line)
             for i, code in enumerate(line):
@@ -205,9 +209,37 @@ class GameLevelScene(Scene):
                     tile = Sprite('pics/brickwall.png')
                     tile.position = (i*40 + 20, (j*40+20))
                     tiles.add(tile)
-
+                elif code == '2':
+                    boost = Sprite('pics/bottle.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
+                elif code == '3':
+                    boost = Sprite('pics/cocaine.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
+                elif code == '4':
+                    boost = Sprite('pics/pill.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
+                elif code == '5':
+                    boost = Sprite('pics/stamp.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
+                elif code == '6':
+                    boost = Sprite('pics/syringe.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
+                elif code == '7':
+                    boost = Sprite('pics/joint.png')
+                    boost.position = (i*40 + 20, (j*40+20))
+                    self.boosts[(i,j)]=boost
+                    bglayer.add(boost, z=2)
         width = width*40
-        bglayer = ScrollableLayer()
         bglayer.px_width = width
         bglayer.px_height = 1440
 

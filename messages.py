@@ -21,11 +21,11 @@ def unpack_dead(data):
     return struct.unpack("!cff", data)
 
 def unpack_keyup(data):
-    #("!Bcc", 6, 1)
+    #("!BB", 6, 1)
     return struct.unpack("!B", data)[0]
 
 def unpack_keydown(data):
-    #("!Bcc", 7, 1)
+    #("!BB", 7, 1)
     return struct.unpack("!B", data)[0]
 
 unpackers = {'\x01': (1, unpack_cid),
@@ -33,8 +33,8 @@ unpackers = {'\x01': (1, unpack_cid),
              '\x03': (10, unpack_position),
              '\x04': (10, unpack_eat),
              '\x05': (9, unpack_dead),
-             '\x06': (2, unpack_keyup),
-             '\x07': (2, unpack_keydown)}
+             '\x06': (1, unpack_keyup),
+             '\x07': (1, unpack_keydown)}
 
 def get_unpacker(mid):
     return unpackers.get(mid, (None, None))

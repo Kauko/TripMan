@@ -111,6 +111,7 @@ class Server:
                     except socket.error, err:
                         print "socket.error", repr(err)
 
+            remove = set()
             for descriptor in self.sockets:
                 player = self.sockets[descriptor]
                 if player.velocity:
@@ -132,7 +133,10 @@ class Server:
                                                          player.position[0],
                                                          player.position[1])
                         for client in self.sockets:
-                            client.send(pos_msg)
+                            try:
+                                client.send(pos_msg)
+                            except socket.error, err:
+                                remove.add(client)
                         
                 if player.effect:
                     eat_msg = messages.pack_eat(player.cid,
@@ -140,7 +144,10 @@ class Server:
                                                 player.position[0],
                                                 player.position[1])
                     for client in self.sockets:
-                        client.send(eat_msg)
+                        try:
+                            client.send(eat_msg)
+                        except socket.error, err:
+                            remove.add(client)
                     player.effect = 0
 
                 if not player.alive:
@@ -148,8 +155,16 @@ class Server:
                                                     player.position[0],
                                                     player.position[1])
                     for client in self.sockets:
-                        client.send(death_msg)
+                        try:
+                            client.send(death_msg)
+                        except socket.error, err:
+                            remove.add(client)
 
+            for client in remove:
+                try:
+                    del self.sockets[client]
+                except KeyError:
+                    pass
             snooze = 1/20.0 - (time.time()-start)
             if snooze > 0:
                 time.sleep(snooze)

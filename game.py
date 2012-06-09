@@ -295,8 +295,6 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
 
         pyglet.media.load('sounds/music.wav', streaming=False).play()
-        if serverConnection.socket and serverConnection.socket.recv(20):
-            serverConnection.close()
         serverConnection.connect()
 
 class GameOverScene(Scene):
@@ -337,6 +335,11 @@ class MainMenu(Menu):
             MenuItem('Credits', self.on_credits),
             MenuItem('Quit', self.on_quit),
             ]
+
+        try:
+            serverConnection.close()
+        except:
+            pass
 
         self.create_menu(items, zoom_in(), zoom_out(), zoom_out())
         

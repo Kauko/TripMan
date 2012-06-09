@@ -121,7 +121,7 @@ class Server:
                         else:
                             remove.add(descriptor)
                     except socket.error, err:
-                        print "socket.error", repr(err)
+                        remove.add(descriptor)
 
             for descriptor in self.sockets:
                 if self.start_time not in [False, True]:

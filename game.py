@@ -10,6 +10,7 @@ from cocos.scene import *
 from cocos.layer import *
 from cocos.sprite import *
 from cocos.actions.interval_actions import MoveTo
+from cocos.actions.basegrid_actions import StopGrid
 from cocos.actions.grid3d_actions import *
 from messages import get_unpacker, pack_keyup, pack_keydown
 from testing import GameLevelScene
@@ -88,14 +89,17 @@ class PlayerLayer(ScrollableLayer):
         self.effects = None
         self.current_effect = 0
 
-        self.effects = {2 : Ripple3D(center=(320,240), radius=240, waves=15, amplitude=60, duration=20, grid=(32,24)),
-                        3 : Lens3D(center=(320,240), radius=150, grid=(16,16), duration=10),
-                        4 : Liquid( waves=5, amplitude=40, grid=(16,16), duration=10),
-                        5 : Shaky3D( randrange=6, grid=(4,4), duration=10),
-                        6 : Twirl( center=(320,240), twirls=5, amplitude=1, grid=(16,12), duration=10),
-                        7 : Waves( waves=4, amplitude=20, hsin=False, vsin=True, grid=(16,16), duration=10),
-                        }
-
+        self.effects = {2: Ripple3D(center=(320,240), radius=240, waves=15,
+                           amplitude=60, duration=20, grid=(32,24)),
+                        3: Lens3D(center=(320,240), radius=150, grid=(16,16),
+                           duration=10),
+                        4: Liquid(waves=5, amplitude=40, grid=(16,16),
+                           duration=10),
+                        5: Shaky3D( randrange=6, grid=(4,4), duration=10),
+                        6: Twirl( center=(320,240), twirls=5, amplitude=1,
+                           grid=(16,12), duration=10),
+                        7: Waves( waves=4, amplitude=20, hsin=False, 
+                           vsin=True, grid=(16,16), duration=10)}
     
     def on_key_press(self, key, modifiers):
         if key == LEFT:

@@ -123,18 +123,19 @@ class Server:
                         
                         self.checkTile(player)
                         
-                        for foo in self.sockets:
-                            descriptor.send(pack_position(player.cid, 
-                                                          player.direction,
-                                                          player.position[0],
-                                                          player.position[1]))
+                        for client in self.sockets:
+                            client.send(pack_position(player.cid, 
+                                                      player.direction,
+                                                      player.position[0],
+                                                      player.position[1]))
                         
-                        if player.effect != 0:
-                            for foo in self.sockets:
-                                descriptor.send(pack_eat(player.cid, 
-                                                         player.effect,
-                                                         player.position[0],
-                                                         player.position[1]))
+                if player.effect:
+                    for client in self.sockets:
+                        client.send(pack_eat(player.cid, 
+                                             player.effect,
+                                             player.position[0],
+                                             player.position[1]))
+                    player.effect = 0
 
     def isMoveLegal(self, player, movedir):
         x, y = player.position

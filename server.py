@@ -28,7 +28,7 @@ class Server:
         self.sockets = dict()
         self.players = dict()
 
-        f = open('level1.txt', "r")
+        f = open('level2.txt', "r")
         lines = f.readlines()
         f.close()
 

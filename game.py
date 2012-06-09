@@ -192,6 +192,6 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('localhost', 10066)
+    serverConnection = ServerConnection('10.20.203.130', 10066)
     director.init(width=1240, height=720)
     director.run(GameLevelScene())

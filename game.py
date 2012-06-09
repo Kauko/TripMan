@@ -44,6 +44,7 @@ class ServerConnection(object):
         self.host = host
         self.port = port
         self.last = None
+        self.socket = None
 
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -135,10 +136,10 @@ class PlayerLayer(ScrollableLayer):
             serverConnection.write(messages.pack_keyup(MOVEDOWN))
 
     def update(self, dt):
-        if self.delay > 60 * 2:
+        if self.delay > 60 * 15:
             self.reality.x += self.game_speed * dt
             self.od.x += self.game_speed * dt
-        self.delay += 1
+        self.delay += 60 * dt
 
         player = self.players.get(self.cid, None)
         if player:
@@ -290,6 +291,8 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
 
         pyglet.media.load('sounds/music.wav', streaming=False).play()
+        if serverConnection.socket and serverConnection.socket.recv(20):
+            serverConnection.close()
         serverConnection.connect()
 
 class GameOverScene(Scene):

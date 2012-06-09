@@ -127,7 +127,7 @@ class Server:
                 if self.start_time not in [False, True]:
                     if time.time() > self.start_time:
                         self.start_time = True
-                        start_msg = messages.pack_start(10)
+                        start_msg = messages.pack_start(5)
                         for client in self.sockets:
                             try:
                                 client.send(start_msg)
@@ -175,7 +175,7 @@ class Server:
                     player.effect = 0
 
                 if not player.alive:
-                    remove.add(player)
+                    remove.add(descriptor)
                     death_msg = messages.pack_death(player.cid,
                                                     player.position[0],
                                                     player.position[1])

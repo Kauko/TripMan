@@ -47,7 +47,7 @@ class ServerConnection(object):
 
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        self.socket.connect((host, port))
+        self.socket.connect((self.host, self.port))
         self.socket.setblocking(0)
 
     def read(self):

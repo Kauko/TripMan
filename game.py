@@ -68,6 +68,7 @@ class Player(Sprite):
         Sprite.__init__(self, image, position=position)
         self.cid = cid
         self.moveto = None
+        self.alive = True
 
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
@@ -102,7 +103,7 @@ class PlayerLayer(ScrollableLayer):
         self.od = Sprite('pics/od.png', position=(800,0), anchor=(0,360))
         self.add(self.od, z=3)
 
-        self.game_speed = 80;
+        self.game_speed = 70;
 
 
     def on_key_press(self, key, modifiers):
@@ -137,7 +138,9 @@ class PlayerLayer(ScrollableLayer):
                 self.od.y = y
 
             if x < self.reality.x or x > self.od.x:
-                serverConnection.write(messages.pack_death(player.cid, x, y))
+                if player.alive:
+                    serverConnection.write(messages.pack_death(player.cid, x, y))
+                    player.alive = False
 
             self.get_ancestor(ScrollingManager).set_focus(int(x), int(y))
 
@@ -277,6 +280,6 @@ class GameLevelScene(Scene):
 
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('', 10066)
+    serverConnection = ServerConnection('shell.jkry.org', 10066)
     director.init(width=1280, height=720)#, fullscreen=True)
     director.run(GameLevelScene())

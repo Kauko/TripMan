@@ -145,11 +145,11 @@ class GameLevelScene(Scene):
         super(GameLevelScene, self).__init__()
         self.scroller = ScrollingManager()
         bglayer = ScrollableLayer()
-        bglayer.px_width = 40 * 100
-        bglayer.px_height = 720 * 2 
+        bglayer.px_width = 2600
+        bglayer.px_height = 1480 
         bglayer.add(Sprite('background.png', position=(1300, 360)))
+        bglayer.add(Sprite('background.png', position=(1300, 360 + 720)))
  
-
         tiles = cocos.batch.BatchNode()
         level = loadLevel('level2.txt')
         for j, line in enumerate(level[::-1]):

@@ -171,17 +171,17 @@ class Server:
     def checkTile(self, player):
         x,y = player.position
         if self.worldGrid[y][x] != '0':
-            if self.worldGrid[y][x] == '2':
+            if self.worldGrid[y][x] == str(E_RIPPLE):
                 player.effect = E_RIPPLE
-            elif self.worldGrid[y][x] == '3':
+            elif self.worldGrid[y][x] == str(E_LENS):
                 player.effect = E_LENS
-            elif self.worldGrid[y][x] == '4':
+            elif self.worldGrid[y][x] == str(E_LIQUID):
                 player.effect = E_LIQUID
-            elif self.worldGrid[y][x] == '5':
+            elif self.worldGrid[y][x] == str(E_SHAKY):
                 player.effect = E_SHAKY
-            elif self.worldGrid[y][x] == '6':
+            elif self.worldGrid[y][x] == str(E_TWIRL):
                 player.effect = E_TWIRL
-            elif self.worldGrid[y][x] == '7':
+            elif self.worldGrid[y][x] == str(E_WAVES):
                 player.effect = E_WAVES
             else:
                 player.effect = 0

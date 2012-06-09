@@ -80,7 +80,7 @@ class PlayerLayer(ScrollableLayer):
         self.px_height = height
         
         self.schedule(self.update)
-        self.schedule_interval(self.update_network, 1/20.0)
+        self.schedule_interval(self.update_network, 1/60.0)
         
         self.cid = None
         

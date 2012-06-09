@@ -16,6 +16,8 @@ E_SHAKY = 5
 E_TWIRL = 6
 E_WAVES = 7
 
+E_WIN = 9
+
 class Player:
     def __init__(self, cid, position):
         self.cid = cid
@@ -182,6 +184,8 @@ class Server:
                 player.effect = E_TWIRL
             elif self.worldGrid[y][x] == str(E_WAVES):
                 player.effect = E_WAVES
+            elif self.worldGrid[y][x] == str(E_WIN):
+                player.effect = E_WIN
             else:
                 player.effect = 0
         else:

@@ -89,7 +89,7 @@ class Server:
                     try:
                         descriptor.send(messages.pack_cid(cid, position[0], position[1]))
                     except socket.error, err:
-                        remove.add(client)
+                        remove.add(descriptor)
                 elif descriptor in self.sockets:
                     player = self.sockets[descriptor]
 

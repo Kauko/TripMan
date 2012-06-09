@@ -86,7 +86,10 @@ class Server:
                     position = self.start_points[cid] 
                     player = Player(cid, position)
                     self.sockets[descriptor] = player
-                    descriptor.send(messages.pack_cid(cid, position[0], position[1]))
+                    try:
+                        descriptor.send(messages.pack_cid(cid, position[0], position[1]))
+                    except socket.error, err:
+                        remove.add(client)
                 elif descriptor in self.sockets:
                     player = self.sockets[descriptor]
 
@@ -97,6 +100,8 @@ class Server:
                             length, unpacker = messages.get_unpacker(mid)
                             if length:
                                 data = descriptor.recv(length)
+                                if not data:
+                                    remove.add(descriptor)
                                 if ord(mid) == 5:
                                     player.alive = False
                                 elif ord(mid) == 6: #key up
@@ -106,11 +111,11 @@ class Server:
                                     player.direction = key
                                     player.velocity = 1
                         else:
-                            print "%s: disconnected" % player.cid
-                            del self.sockets[descriptor]
+                            remove.add(descriptor)
                     except socket.error, err:
                         print "socket.error", repr(err)
 
+            remove = set()
             for descriptor in self.sockets:
                 player = self.sockets[descriptor]
                 if player.velocity:
@@ -132,7 +137,10 @@ class Server:
                                                          player.position[0],
                                                          player.position[1])
                         for client in self.sockets:
-                            client.send(pos_msg)
+                            try:
+                                client.send(pos_msg)
+                            except socket.error, err:
+                                remove.add(client)
                         
                 if player.effect:
                     eat_msg = messages.pack_eat(player.cid,
@@ -140,16 +148,30 @@ class Server:
                                                 player.position[0],
                                                 player.position[1])
                     for client in self.sockets:
-                        client.send(eat_msg)
+                        try:
+                            client.send(eat_msg)
+                        except socket.error, err:
+                            remove.add(client)
                     player.effect = 0
 
                 if not player.alive:
+                    remove.add(player)
                     death_msg = messages.pack_death(player.cid,
                                                     player.position[0],
                                                     player.position[1])
                     for client in self.sockets:
-                        client.send(death_msg)
+                        try:
+                            client.send(death_msg)
+                        except socket.error, err:
+                            remove.add(client)
 
+            for client in remove:
+                try:
+                    player = self.sockets[client]
+                    print "%s: disconnected" % player.cid
+                    del self.sockets[client]
+                except KeyError:
+                    pass
             snooze = 1/20.0 - (time.time()-start)
             if snooze > 0:
                 time.sleep(snooze)

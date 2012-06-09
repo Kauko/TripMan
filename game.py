@@ -135,7 +135,7 @@ class PlayerLayer(ScrollableLayer):
             self.cid, x, y = data
             x = x * 40 + 20
             y = y * 40 + 20
-            player = Player(self.cid, "pics/test.png", (x,y))
+            player = Player(self.cid, "pics/" + self.cid + ".png", (x,y))
             self.add(player)
             self.players[self.cid] = player
         elif mid == 3:
@@ -145,7 +145,7 @@ class PlayerLayer(ScrollableLayer):
             x = x * 40 + 20
             y = y * 40 + 20 # nolla = alareuna tiedostalla ja kasvaa yloes
             if not player:
-                player = Player(cid, "pics/test.png", (x,y))
+                player = Player(cid, "pics/" + cid + ".png", (x,y))
                 self.add(player)
                 self.players[cid] = player
 

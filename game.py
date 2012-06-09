@@ -10,8 +10,9 @@ from cocos.scene import *
 from cocos.layer import *
 from cocos.sprite import *
 from cocos.actions.interval_actions import MoveTo
-
+from cocos.actions.grid3d_actions import *
 from messages import get_unpacker, pack_keyup, pack_keydown
+from testing import GameLevelScene
 
 LEFT = 65361
 UP = 65362
@@ -25,6 +26,13 @@ MOVEDOWN = 4
 
 TILEWIDTH = 16
 TILEHEIGHT = 16
+
+E_RIPPLE = 2
+E_LENS = 3
+E_LIQUID = 4
+E_SHAKY = 5
+E_TWIRL = 6
+E_WAVES = 7
 
 class ServerConnection(object):
     def __init__(self, host, port):
@@ -61,6 +69,7 @@ class Player(Sprite):
         self.cid = cid
         self.target = self.position
         self.moveto = None
+        
 
 class PlayerLayer(ScrollableLayer):
     is_event_handler = True
@@ -78,7 +87,16 @@ class PlayerLayer(ScrollableLayer):
         self.movedir = 0 #1 = left,2 = up,3 = right,4 = down
         self.movespeed = 1
         self.players = dict()
-
+        self.effects = None
+        
+    def initEffectFunctions(self):
+        self.effects = {2:self.get_ancestor(GameLevelScene).do( Ripple3D(center=(320,240), radius=240, waves=15, amplitude=60, duration=20, grid=(32,24) ) ),
+                        3:self.get_ancestor(GameLevelScene).do( Lens3D(center=(320,240), radius=150, grid=(16,16), duration=10) ),
+                        4:self.get_ancestor(GameLevelScene).do( Liquid( waves=5, amplitude=40, grid=(16,16), duration=10) ),
+                        5:self.get_ancestor(GameLevelScene).do( Shaky3D( randrange=6, grid=(4,4), duration=10) ),
+                        6:self.get_ancestor(GameLevelScene).do( Twirl( center=(320,240), twirls=5, amplitude=1, grid=(16,12), duration=10) ),
+                        7:self.get_ancestor(GameLevelScene).do( Waves( waves=4, amplitude=20, hsin=False, vsin=True, grid=(16,16), duration=10) ),}
+    
     def on_key_press(self, key, modifiers):
         if key == LEFT:
             serverConnection.write(pack_keydown(MOVELEFT))
@@ -118,6 +136,7 @@ class PlayerLayer(ScrollableLayer):
         elif mid == 3:
             cid, direction, x, y = data
             player = self.players.get(cid, None)
+            
             x = x * 40
             y = y * 40 + 20 # nolla = alareuna tiedostalla ja kasvaa yloes
             if not player:
@@ -129,6 +148,14 @@ class PlayerLayer(ScrollableLayer):
                 player.moveto.stop()
             player.moveto = MoveTo((x,y), 1/20.0)
             player.do(player.moveto)
+        
+        elif mid == 4:
+            cid,effect, x, y = data
+            if effect != 0:
+                if self.effects is None:
+                    self.initEffectFunctions()
+                chosenEffect = self.effects[effect]
+                chosenEffect()   
 
 def loadLevel(filename):
     level = list()
@@ -166,6 +193,6 @@ class GameLevelScene(Scene):
         self.add(self.scroller)
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('', 10066)
+    serverConnection = ServerConnection('localhost', 10066)
     director.init(width=1240, height=720)
     director.run(GameLevelScene())

@@ -2,13 +2,19 @@ import time
 import random
 import socket
 from select import select
-from messages import get_unpacker, pack_cid, pack_server_full, pack_position
+from messages import get_unpacker, pack_cid, pack_server_full, pack_position, pack_eat
 
 MOVELEFT = 1
 MOVERIGHT = 3
 MOVEUP = 2
 MOVEDOWN = 4
 
+E_RIPPLE = 2
+E_LENS = 3
+E_LIQUID = 4
+E_SHAKY = 5
+E_TWIRL = 6
+E_WAVES = 7
 
 class Player:
     def __init__(self, cid, position):
@@ -16,6 +22,7 @@ class Player:
         self.position = position
         self.direction = 1
         self.velocity = 0
+        self.effect = 0
 
 class Server:
     def __init__(self, address):
@@ -74,6 +81,7 @@ class Server:
                     print "%s: connected" % cid
                     position = self.start_points[cid] 
                     player = Player(cid, position)
+                    player.effect = 0
                     self.sockets[descriptor] = player
                     descriptor.send(pack_cid(cid))
                 elif descriptor in self.sockets:
@@ -112,12 +120,21 @@ class Server:
                             player.position = x, y+1
                         elif player.direction == MOVEDOWN:
                             player.position = x, y-1
-
+                        
+                        self.checkTile(player)
+                        
                         for foo in self.sockets:
                             descriptor.send(pack_position(player.cid, 
                                                           player.direction,
                                                           player.position[0],
                                                           player.position[1]))
+                        
+                        if player.effect != 0:
+                            for foo in self.sockets:
+                                descriptor.send(pack_eat(player.cid, 
+                                                         player.effect,
+                                                         player.position[0],
+                                                         player.position[1]))
 
     def isMoveLegal(self, player, movedir):
         x, y = player.position
@@ -150,6 +167,26 @@ class Server:
         else:
             return False
 
+    def checkTile(self, player):
+        x,y = player.position
+        if self.worldGrid[y][x] != '0':
+            if self.worldGrid[y][x] == '2':
+                player.effect = E_RIPPLE
+            elif self.worldGrid[y][x] == '3':
+                player.effect = E_LENS
+            elif self.worldGrid[y][x] == '4':
+                player.effect = E_LIQUID
+            elif self.worldGrid[y][x] == '5':
+                player.effect = E_SHAKY
+            elif self.worldGrid[y][x] == '6':
+                player.effect = E_TWIRL
+            elif self.worldGrid[y][x] == '7':
+                player.effect = E_WAVES
+            else:
+                player.effect = 0
+        else:
+            player.effect = 0
+    
     def getPlayerStartPosition(self, cid):
         for index, row in enumerate(self.worldGrid):
             for jindex, col in enumerate(row):

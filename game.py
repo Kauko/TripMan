@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 import time
 import select
 import socket
@@ -12,6 +13,9 @@ from cocos.sprite import *
 from cocos.actions.interval_actions import * 
 from cocos.actions.basegrid_actions import StopGrid
 from cocos.actions.grid3d_actions import *
+from cocos.menu import *
+from cocos.text import *
+
 import messages
 
 LEFT = 65361
@@ -203,6 +207,7 @@ class PlayerLayer(ScrollableLayer):
             cid, x, y = data
             if cid == self.cid:
                 print "I'm dead"
+                director.replace(GameOverScene())
             else:
                 player = self.players.get(cid, None)
                 if player:
@@ -278,8 +283,101 @@ class GameLevelScene(Scene):
 
         pyglet.media.load('sounds/music.wav', streaming=False).play()
 
+
+class GameOverScene(Scene):
+    def __init__(self):
+        super(GameOverScene, self).__init__()
+        self.add(ColorLayer(255, 0, 0, 255))
+        self.add(GameOverLayer(), z=1)
+
+
+class GameOverLayer(Layer):
+    is_event_handler = True
+    def __init__(self):
+        x, y = director.get_window_size()
+        super(GameOverLayer, self).__init__()
+        
+        self.gameOver = Label("GAME OVER!", font_size=40,
+                          font_name='arial',
+                          color=(0, 0, 0, 255),
+                          anchor_x='center',
+                          anchor_y='bottom')
+        self.gameOver.position = (x / 2, y /2)
+        self.add(self.gameOver)
+
+    def on_key_release(self, symbol, modifiers):
+        director.pop()
+
+class MainMenu(Menu):
+
+    def __init__(self):
+        super(MainMenu, self).__init__('')
+        #self.add(ColorLayer(0, 127, 255, 255), z=-1)
+        self.menu_anchor_y = CENTER
+        self.menu_anchor_x = CENTER
+        
+        items = [
+            MenuItem('New Game', self.on_new_game),
+            MenuItem('Credits', self.on_credits),
+            MenuItem('Quit', self.on_quit),
+            ]
+
+        self.create_menu(items, zoom_in(), zoom_out(), zoom_out())
+        
+    def on_new_game(self):
+        director.push(GameLevelScene())
+
+    def on_quit(self):
+        exit()
+
+    def on_credits(self):
+        self.parent.switch_to(1)
+
+class Credits(ColorLayer):
+
+    is_event_handler = True
+
+    def __init__(self):
+        super(Credits, self).__init__(0, 127, 255, 255)
+
+        INTRO = """<b>TripMan<b>
+
+<p>
+<i>Team:</i><br>
+Rauli Puuper&auml;<br>
+Sebastian Turpeinen<br>
+Teemu Kaukoranta<br>
+Miikka Saukko<br>
+</p>
+<p>
+<i>Special Thanks:</i><br>
+Mika Sepp&auml;nen<br>
+</p>
+<p>
+<i>Extra Special Thanks</i><br>
+The lovely organizers of Vectorama 2012 <3<3<3<3</p>
+"""
+        self.introlabel = cocos.text.HTMLLabel(INTRO,
+                                                x=1280/3,
+                                                y=2 * 720/ 3,
+                                                anchor_x='left',
+                                                multiline=True,
+                                                width=self.width - 200)
+
+        self.add(self.introlabel)
+
+    def on_key_press(self, key, modifier):
+        self.parent.switch_to(0)
+        return True
+        
+def exit():
+    pyglet.app.exit()
+    print 'Thank you for playing'
         
 if __name__ == '__main__':
-    serverConnection = ServerConnection('shell.jkry.org', 10066)
+    serverConnection = ServerConnection('', 10066)
     director.init(width=1280, height=720)#, fullscreen=True)
-    director.run(GameLevelScene())
+    scene = Scene()
+    scene.add(MultiplexLayer(MainMenu(), Credits()), z=1)
+    director.run(scene)
+

@@ -23,7 +23,7 @@ class Player:
         self.direction = 1
         self.velocity = 0
         self.effect = 0
-        self.alive = 1
+        self.alive = True 
 
 class Server:
     def __init__(self, address):
@@ -95,11 +95,11 @@ class Server:
                             length, unpacker = messages.get_unpacker(mid)
                             if length:
                                 data = descriptor.recv(length)
-                                if ord(mid) == 6: #key up
-                                    key = unpacker(data)
+                                if ord(mid) == 5:
+                                    player.alive = False
+                                elif ord(mid) == 6: #key up
                                     player.velocity = 0
                                 elif ord(mid) == 7: #key down
-                                    key = unpacker(data)
                                     player.direction = key
                                     player.velocity = 1
                         else:

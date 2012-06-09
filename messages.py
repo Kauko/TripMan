@@ -28,13 +28,18 @@ def unpack_keydown(data):
     #("!BB", 7, 1)
     return struct.unpack("!B", data)[0]
 
+def unpack_start(data):
+    #("!BB", 8, 10)
+    return struct.unpack("!B", data)[0]
+
 unpackers = {'\x01': (9, unpack_cid),
              '\x02': (11, unpack_server_full),
              '\x03': (10, unpack_position),
              '\x04': (10, unpack_eat),
              '\x05': (9, unpack_death),
              '\x06': (1, unpack_keyup),
-             '\x07': (1, unpack_keydown)}
+             '\x07': (1, unpack_keydown),
+             '\x08': (1, unpack_start)}
 
 def get_unpacker(mid):
     return unpackers.get(mid, (None, None))
@@ -60,3 +65,6 @@ def pack_keyup(key):
 
 def pack_keydown(key):
     return struct.pack("!BB", 7, key)
+
+def pack_start(delay):
+    return struct.pack("!BB", 8, delay)

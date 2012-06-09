@@ -51,6 +51,9 @@ class ServerConnection(object):
         self.socket.connect((self.host, self.port))
         self.socket.setblocking(0)
 
+    def close(self):
+        self.socket.close()
+
     def read(self):
         r, _, _ = select.select([self.socket], [], [], 0)
         if r:
@@ -221,7 +224,7 @@ class PlayerLayer(ScrollableLayer):
                 if player:
                     player.visible = False
         elif mid == 8:
-            self.delay = data
+            self.delay = time.time() + data
 
 def loadLevel(filename):
     level = list()

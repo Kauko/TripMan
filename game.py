@@ -85,7 +85,7 @@ class PlayerLayer(ScrollableLayer):
         super(PlayerLayer, self).__init__()
         self.px_width = width
         self.px_height = height
-        self.delay = 0
+        self.delay = False
 
         self.schedule(self.update)
         self.schedule_interval(self.update_network, 1/60.0)
@@ -136,10 +136,9 @@ class PlayerLayer(ScrollableLayer):
             serverConnection.write(messages.pack_keyup(MOVEDOWN))
 
     def update(self, dt):
-        if self.delay > 60 * 15:
+        if self.delay != False and time.time() > self.delay:
             self.reality.x += self.game_speed * dt
             self.od.x += self.game_speed * dt
-        self.delay += 60 * dt
 
         player = self.players.get(self.cid, None)
         if player:
@@ -221,6 +220,8 @@ class PlayerLayer(ScrollableLayer):
                 player = self.players.get(cid, None)
                 if player:
                     player.visible = False
+        elif mid == 8:
+            self.delay = data
 
 def loadLevel(filename):
     level = list()

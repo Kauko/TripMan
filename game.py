@@ -12,7 +12,7 @@ from cocos.sprite import *
 from cocos.actions.interval_actions import * 
 from cocos.actions.basegrid_actions import StopGrid
 from cocos.actions.grid3d_actions import *
-from messages import get_unpacker, pack_keyup, pack_keydown
+import messages
 
 LEFT = 65361
 UP = 65362
@@ -50,7 +50,7 @@ class ServerConnection(object):
             if not mid:
                 return None, None
 
-            length, unpacker = get_unpacker(mid)
+            length, unpacker = messages.get_unpacker(mid)
             if length:
                 data = self.socket.recv(length)
                 unpacked = unpacker(data)
@@ -96,10 +96,10 @@ class PlayerLayer(ScrollableLayer):
         self.sounds[6] = pyglet.media.load("sounds/wuhuu.wav", streaming=False)
         self.sounds[7] = pyglet.media.load("sounds/lighter.wav", streaming=False)
 
-        self.reality = Sprite('pics/reality.png', position=(0,0), anchor=(1280, 0))
+        self.reality = Sprite('pics/reality.png', position=(0,0), anchor=(1280, 360))
         self.add(self.reality, z=3)
 
-        self.od = Sprite('pics/od.png', position=(800,0), anchor=(0,0))
+        self.od = Sprite('pics/od.png', position=(800,0), anchor=(0,360))
         self.add(self.od, z=3)
 
         self.game_speed = 80;
@@ -107,23 +107,23 @@ class PlayerLayer(ScrollableLayer):
 
     def on_key_press(self, key, modifiers):
         if key == LEFT:
-            serverConnection.write(pack_keydown(MOVELEFT))
+            serverConnection.write(messages.pack_keydown(MOVELEFT))
         elif key == RIGHT:
-            serverConnection.write(pack_keydown(MOVERIGHT))
+            serverConnection.write(messages.pack_keydown(MOVERIGHT))
         elif key == UP:
-            serverConnection.write(pack_keydown(MOVEUP))
+            serverConnection.write(messages.pack_keydown(MOVEUP))
         elif key == DOWN:
-            serverConnection.write(pack_keydown(MOVEDOWN))
+            serverConnection.write(messages.pack_keydown(MOVEDOWN))
 
     def on_key_release(self, key, modifiers):
         if key == LEFT:
-            serverConnection.write(pack_keyup(MOVELEFT))
+            serverConnection.write(messages.pack_keyup(MOVELEFT))
         elif key == RIGHT:
-            serverConnection.write(pack_keyup(MOVERIGHT))
+            serverConnection.write(messages.pack_keyup(MOVERIGHT))
         elif key == UP:
-            serverConnection.write(pack_keyup(MOVEUP))
+            serverConnection.write(messages.pack_keyup(MOVEUP))
         elif key == DOWN:
-            serverConnection.write(pack_keyup(MOVEDOWN))
+            serverConnection.write(messages.pack_keyup(MOVEDOWN))
 
     def update(self, dt):
         self.reality.x += self.game_speed * dt
@@ -131,11 +131,16 @@ class PlayerLayer(ScrollableLayer):
 
         player = self.players.get(self.cid, None)
         if player:
-            if player.y > 360 and player.y < 360 + 720:
-                self.reality.y = player.y - 360
-                self.od.y = player.y - 360
-            (x, y) = player.position 
+            (x, y) = player.position
+            if y > 360 and y < 360 + 720:
+                self.reality.y = y 
+                self.od.y = y
+
+            if x < self.reality.x or x > self.od.x:
+                serverConnection.write(messages.pack_death(player.cid, x, y))
+
             self.get_ancestor(ScrollingManager).set_focus(int(x), int(y))
+
 
     def update_network(self, dt):
         #read networkstuff
@@ -190,6 +195,15 @@ class PlayerLayer(ScrollableLayer):
 
                 if effect in self.sounds:
                     self.sounds[effect].play()
+
+        elif mid == 5:
+            cid, x, y = data
+            if cid == self.cid:
+                print "I'm dead"
+            else:
+                player = self.players.get(cid, None)
+                if player:
+                    player.visible = False
 
 def loadLevel(filename):
     level = list()
